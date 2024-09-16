@@ -14,11 +14,8 @@ import (
 	"github.com/setanarut/vec"
 )
 
-const (
-	screenWidth   = 640
-	screenHeight  = 480
-	hScreenWidth  = screenWidth / 2
-	hScreenHeight = screenHeight / 2
+var (
+	screenSize = vec.Vec2{640, 480}
 )
 
 type Game struct {
@@ -44,7 +41,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth, screenHeight
+	return int(screenSize.X), int(screenSize.Y)
 }
 
 var (
@@ -54,19 +51,22 @@ var (
 func main() {
 	// Initialising Chipmunk
 	space := cm.NewSpace()
-	space.SleepTimeThreshold = 0.5
-	space.SetGravity(vec.Vec2{X: 0, Y: -100})
+	space.SleepTimeThreshold = 0.2
+	space.SetGravity(vec.Vec2{X: 0, Y: 300})
+
 	simpleTerrain(space)
 	var r float64 = 6.0
 	for i := 0; i < 100; i++ {
-		addBall(space, float64(i%10)*r*2, float64(i/10)*r*2, r)
+		pos := vec.Vec2{(float64(i%10) * r * 2), (float64(i/10) * r * 2)}
+		pos = pos.Add(screenSize.Scale(0.5)).Add(vec.Vec2{-50, -50})
+		addBall(space, pos.X, pos.Y, r)
 	}
 
 	// Initialising Ebitengine/v2
 	game := &Game{}
 	game.space = space
-	game.drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
-	ebiten.SetWindowSize(screenWidth, screenHeight)
+	game.drawer = ebitencm.NewDrawer()
+	ebiten.SetWindowSize(int(screenSize.X), int(screenSize.Y))
 	ebiten.SetWindowTitle("ebiten-chipmunk - bench")
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
@@ -74,13 +74,13 @@ func main() {
 }
 
 func addBall(space *cm.Space, x, y, radius float64) {
-	mass := radius * radius / 100.0
+	mass := 0.01
 	body := space.AddBody(cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{})))
 	ball = body
 	body.SetPosition(vec.Vec2{X: x, Y: y})
 	shape := space.AddShape(cm.NewCircle(body, radius, vec.Vec2{}))
-	shape.SetElasticity(0.5)
-	shape.SetFriction(0.5)
+	shape.SetElasticity(0.8)
+	shape.SetFriction(1)
 }
 
 func simpleTerrain(space *cm.Space) *cm.Space {
@@ -94,11 +94,18 @@ func simpleTerrain(space *cm.Space) *cm.Space {
 		{X: 509.56, Y: 223.00}, {X: 523.51, Y: 247.00}, {X: 523.00, Y: 277.00}, {X: 497.79, Y: 311.00}, {X: 478.67, Y: 348.00}, {X: 467.90, Y: 360.00},
 		{X: 456.76, Y: 382.00}, {X: 432.95, Y: 389.00}, {X: 417.00, Y: 411.32}, {X: 373.00, Y: 433.19}, {X: 361.00, Y: 430.02}, {X: 350.00, Y: 425.07},
 	}
-	offset := vec.Vec2{X: -320, Y: -240}
+
+	// terrain offset
+	offset := vec.Vec2{X: 0, Y: 0}
+
 	for i := 0; i < len(simpleTerrainVerts)-1; i++ {
 		a := simpleTerrainVerts[i]
 		b := simpleTerrainVerts[i+1]
-		space.AddShape(cm.NewSegment(space.StaticBody, a.Add(offset), b.Add(offset), 0))
+		s := cm.NewSegment(space.StaticBody, a.Add(offset), b.Add(offset), 0)
+		s.SetElasticity(0.8)
+		s.SetFriction(1)
+		space.AddShape(s)
 	}
+
 	return space
 }

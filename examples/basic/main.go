@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "image/png"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
@@ -10,10 +11,7 @@ import (
 	"github.com/setanarut/vec"
 )
 
-const (
-	screenWidth  = 640
-	screenHeight = 480
-)
+var Screen = vec.Vec2{640, 480}
 
 var (
 	space  *cm.Space
@@ -35,22 +33,28 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth, screenHeight
+	return int(Screen.X), int(Screen.Y)
 }
 
 func main() {
 	// Initialising Chipmunk
 	space = cm.NewSpace()
-	space.SetGravity(vec.Vec2{X: 0, Y: -100})
-	addWall(space, vec.Vec2{X: -200, Y: -100}, vec.Vec2{X: -10, Y: -150}, 5)
-	addWall(space, vec.Vec2{X: 200, Y: -100}, vec.Vec2{X: 10, Y: -150}, 5)
-	addBall(space, -50, 0, 50)
-	addBall(space, 50, 200, 20)
+	space.SetGravity(vec.Vec2{0, 100})
 
+	// Walls
+	center := Screen.Scale(0.5)
+	a := vec.ForAngle(11 * math.Pi / 6).Scale(100).Add(center)
+	b := vec.ForAngle(7 * math.Pi / 6).Scale(100).Add(center)
+	addWall(space, center, a, 5)
+	addWall(space, center, b, 5)
+
+	// Balls
+	addBall(space, vec.Vec2{center.X, 0}, 50)
+	addBall(space, vec.Vec2{center.X, 0}, 30)
 	// Initialising Ebitengine/v2
 	game := &Game{}
-	drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
-	ebiten.SetWindowSize(screenWidth, screenHeight)
+	drawer = ebitencm.NewDrawer()
+	ebiten.SetWindowSize(int(Screen.X), int(Screen.Y))
 	ebiten.RunGame(game)
 }
 
@@ -59,7 +63,7 @@ func addWall(space *cm.Space, pos1 vec.Vec2, pos2 vec.Vec2, radius float64) {
 	shape.SetElasticity(0.5)
 	shape.SetFriction(0.5)
 }
-func addBall(space *cm.Space, x, y, radius float64) *cm.Body {
+func addBall(space *cm.Space, pos vec.Vec2, radius float64) *cm.Body {
 	mass := radius * radius / 100.0
 	body := space.AddBody(
 		cm.NewBody(
@@ -67,8 +71,7 @@ func addBall(space *cm.Space, x, y, radius float64) *cm.Body {
 			cm.MomentForCircle(mass, 0, radius, vec.Vec2{}),
 		),
 	)
-	body.SetPosition(vec.Vec2{X: x, Y: y})
-
+	body.SetPosition(pos)
 	shape := space.AddShape(
 		cm.NewCircle(
 			body,
