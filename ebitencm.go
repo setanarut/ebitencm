@@ -19,18 +19,20 @@ type Drawer struct {
 	FlipYAxis   bool
 
 	// private
-	handler    mouseEventHandler
-	whiteImage *ebiten.Image
+	handler       mouseEventHandler
+	whiteImage    *ebiten.Image
+	DrawingOffset vec.Vec2
 }
 
 func NewDrawer() *Drawer {
 	whiteImage := ebiten.NewImage(3, 3)
 	whiteImage.Fill(color.White)
 	return &Drawer{
-		AntiAlias:   true,
-		StrokeWidth: 1,
-		FlipYAxis:   true,
-		whiteImage:  whiteImage,
+		AntiAlias:     true,
+		StrokeWidth:   1,
+		FlipYAxis:     true,
+		DrawingOffset: vec.Vec2{},
+		whiteImage:    whiteImage,
 	}
 }
 
@@ -222,10 +224,7 @@ func (d *Drawer) Data() interface{} {
 }
 
 func (d *Drawer) HandleMouseEvent(space *cm.Space) {
-	d.handler.handleMouseEvent(
-		d,
-		space,
-	)
+	d.handler.handleMouseEvent(d, space)
 }
 func (d *Drawer) drawOutline(
 	screen *ebiten.Image,
@@ -237,6 +236,8 @@ func (d *Drawer) drawOutline(
 	sop.LineJoin = vector.LineJoinRound
 	vs, is := path.AppendVerticesAndIndicesForStroke(nil, nil, sop)
 	for i := range vs {
+		vs[i].DstX -= float32(d.DrawingOffset.X)
+		vs[i].DstY -= float32(d.DrawingOffset.Y)
 		vs[i].SrcX = 1
 		vs[i].SrcY = 1
 		vs[i].ColorR = r
@@ -257,6 +258,8 @@ func (d *Drawer) drawFill(
 ) {
 	vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
 	for i := range vs {
+		vs[i].DstX -= float32(d.DrawingOffset.X)
+		vs[i].DstY -= float32(d.DrawingOffset.Y)
 		vs[i].SrcX = 1
 		vs[i].SrcY = 1
 		vs[i].ColorR = r

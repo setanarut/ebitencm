@@ -40,7 +40,7 @@ func main() {
 	// Initialising Chipmunk
 	space := cm.NewSpace()
 	space.SleepTimeThreshold = 0.5
-	space.SetGravity(vec.Vec2{X: 0, Y: 500})
+	space.SetGravity(vec.Vec2{X: 0, Y: 0})
 
 	// walls
 	walls := []vec.Vec2{
@@ -63,7 +63,6 @@ func main() {
 	game := &Game{}
 	game.space = space
 	game.drawer = ebitencm.NewDrawer()
-	game.drawer.FlipYAxis = true
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("ebiten-chipmunk - ball")
 	if err := ebiten.RunGame(game); err != nil {
