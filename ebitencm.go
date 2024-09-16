@@ -19,10 +19,7 @@ type Drawer struct {
 	AntiAlias   bool
 	StrokeWidth float32
 	FlipYAxis   bool
-
-	Camera Camera
-
-	handler mouseEventHandler
+	handler     mouseEventHandler
 }
 
 type Camera struct {
@@ -297,8 +294,6 @@ func (d *Drawer) drawOutline(
 	sop.LineJoin = vector.LineJoinRound
 	vs, is := path.AppendVerticesAndIndicesForStroke(nil, nil, sop)
 	for i := range vs {
-		vs[i].DstX -= float32(d.Camera.Offset.X)
-		vs[i].DstY -= float32(d.Camera.Offset.Y)
 		vs[i].SrcX = 1
 		vs[i].SrcY = 1
 		vs[i].ColorR = r
@@ -319,8 +314,6 @@ func (d *Drawer) drawFill(
 ) {
 	vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
 	for i := range vs {
-		vs[i].DstX -= float32(d.Camera.Offset.X)
-		vs[i].DstY -= float32(d.Camera.Offset.Y)
 		vs[i].SrcX = 1
 		vs[i].SrcY = 1
 		vs[i].ColorR = r
