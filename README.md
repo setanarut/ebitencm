@@ -2,7 +2,6 @@
 
 **ebitencm** (Ebitengine Chipmunk drawer) is an implementation of the `cm.IDrawer` Interface from [setanarut/cm](https://github.com/setanarut/cm). This implementation utilizes [hajimehoshi/ebiten/v2](https://github.com/hajimehoshi/ebiten), making it possible to run across multiple platforms. Coordinate system is top-left by default, same as Ebitengine
 
-![demo](images/demo.gif)
 
 ## Usage
 
@@ -36,10 +35,6 @@ func (g *Game) Update() error {
 	return nil
 }
 ```
-
-
-
-Additional examples can be found in the [examples/)](examples/) directory. These examples can help you adapt the implementation to your own projects.
 
 ## Changing coordinate system
 
