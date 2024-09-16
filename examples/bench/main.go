@@ -65,7 +65,7 @@ func main() {
 	// Initialising Ebitengine/v2
 	game := &Game{}
 	game.space = space
-	game.drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
+	game.drawer = ebitencm.NewDrawer()
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("ebiten-chipmunk - bench")
 	if err := ebiten.RunGame(game); err != nil {

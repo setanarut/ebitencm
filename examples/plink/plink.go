@@ -105,7 +105,7 @@ func main() {
 
 	game := &Game{}
 	game.space = space
-	game.drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
+	game.drawer = ebitencm.NewDrawer()
 	game.drawer.FlipYAxis = true
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)

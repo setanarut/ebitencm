@@ -22,8 +22,6 @@ var (
 const (
 	screenWidth  = 640
 	screenHeight = 480
-	hwidth       = screenWidth / 2
-	hheight      = screenHeight / 2
 )
 
 type Game struct {
@@ -81,15 +79,15 @@ func main() {
 
 	space := cm.NewSpace()
 	space.Iterations = 20
-	space.SetGravity(vec.Vec2{X: 0, Y: -500})
+	space.SetGravity(vec.Vec2{X: 0, Y: 500})
 
 	var shape *cm.Shape
 	var a, b vec.Vec2
 
+	// Walls
 	walls := []vec.Vec2{
-		{X: -320, Y: -240}, {X: -320, Y: 240},
-		{X: 320, Y: -240}, {X: 320, Y: 240},
-		{X: -320, Y: -240}, {X: 320, Y: -240},
+		{0, 0}, {0, screenHeight},
+		{0, screenHeight}, {screenWidth, screenHeight},
 	}
 
 	for i := 0; i < len(walls)-1; i += 2 {
@@ -130,7 +128,7 @@ func main() {
 
 	game := &Game{}
 	game.space = space
-	game.drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
+	game.drawer = ebitencm.NewDrawer()
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("ebiten-chipmunk - theojansen")

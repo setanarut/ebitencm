@@ -17,7 +17,7 @@ func main() {
     // ...
 	game := &Game{}
 	game.space = space
-	game.drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
+	game.drawer = ebitencm.NewDrawer()
     // ...
 }
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -102,7 +102,7 @@ func main() {
 	// Initialising Ebitengine/v2
 	game := &Game{}
 	game.space = space
-	game.drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
+	game.drawer = ebitencm.NewDrawer()
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("ebiten-chipmunk - ball")
 	if err := ebiten.RunGame(game); err != nil {
@@ -130,7 +130,7 @@ You can correct the coordinate system by setting FlipYAxis to true.
 
 ```Go
   func main() {
-  	game.drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
+  	game.drawer = ebitencm.NewDrawer()
 	game.drawer.FlipYAxis = true
   }
 ```

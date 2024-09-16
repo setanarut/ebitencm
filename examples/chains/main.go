@@ -123,7 +123,7 @@ func main() {
 
 	game := &Game{}
 	game.space = space
-	game.drawer = ebitencm.NewDrawer(screenWidth, screenHeight)
+	game.drawer = ebitencm.NewDrawer()
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("ebiten-chipmunk - chains")
