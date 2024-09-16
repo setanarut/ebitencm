@@ -15,10 +15,16 @@ const flipFactor = -1.0
 
 type Drawer struct {
 	Screen      *ebiten.Image
-	AntiAlias   bool
 	StrokeWidth float32
 	// Offset for screen drawing
 	CameraOffset vec.Vec2
+	// Disable filling except dots.
+	FillDisabled bool
+	// Disable strokes
+	StrokeDisabled bool
+
+	OptStroke *ebiten.DrawTrianglesOptions
+	OptFill   *ebiten.DrawTrianglesOptions
 
 	// private
 	handler    mouseEventHandler
@@ -29,10 +35,11 @@ func NewDrawer() *Drawer {
 	whiteImage := ebiten.NewImage(3, 3)
 	whiteImage.Fill(color.White)
 	return &Drawer{
-		AntiAlias:    true,
 		StrokeWidth:  1,
 		CameraOffset: vec.Vec2{},
 		whiteImage:   whiteImage,
+		OptStroke:    &ebiten.DrawTrianglesOptions{},
+		OptFill:      &ebiten.DrawTrianglesOptions{},
 	}
 }
 
@@ -40,32 +47,45 @@ func (d *Drawer) WithScreen(screen *ebiten.Image) *Drawer {
 	d.Screen = screen
 	return d
 }
+func (d *Drawer) SetStrokeAntialias(antialias bool) {
+	d.OptStroke.AntiAlias = antialias
+}
+func (d *Drawer) SetFillAntialias(antialias bool) {
+	d.OptFill.AntiAlias = antialias
+}
 
 func (d *Drawer) DrawCircle(pos vec.Vec2, angle, radius float64, outline, fill cm.FColor, data interface{}) {
 	angle *= flipFactor
-
 	path := &vector.Path{}
 	path.Arc(float32(pos.X), -float32(pos.Y*flipFactor), float32(radius), 0, 2*math.Pi, vector.Clockwise)
-	d.drawFill(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
-
+	// Fill
+	if !d.FillDisabled {
+		d.fillPath(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
+	}
 	path.MoveTo(float32(pos.X), -float32(pos.Y*flipFactor))
 	path.LineTo(float32(pos.X+math.Cos(angle)*radius), -float32(pos.Y*flipFactor+math.Sin(angle)*radius))
 	path.Close()
-	d.drawOutline(d.Screen, *path, outline.R, outline.G, outline.B, outline.A)
+	// Stroke
+	if !d.StrokeDisabled {
+		d.strokePath(d.Screen, *path, outline.R, outline.G, outline.B, outline.A)
+	}
 }
 
-func (d *Drawer) DrawSegment(a, b vec.Vec2, fill cm.FColor, data interface{}) {
+func (d *Drawer) DrawSegment(a, b vec.Vec2, fillColor cm.FColor, data interface{}) {
 
-	var path *vector.Path = &vector.Path{}
+	var path vector.Path = vector.Path{}
 	path.MoveTo(float32(a.X), -float32(a.Y*flipFactor))
 	path.LineTo(float32(b.X), -float32(b.Y*flipFactor))
 	path.Close()
-
-	d.drawFill(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
-	d.drawOutline(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
+	if !d.FillDisabled {
+		d.fillPath(d.Screen, path, fillColor.R, fillColor.G, fillColor.B, fillColor.A)
+	}
+	if !d.StrokeDisabled {
+		d.strokePath(d.Screen, path, fillColor.R, fillColor.G, fillColor.B, fillColor.A)
+	}
 }
 
-func (d *Drawer) DrawFatSegment(a, b vec.Vec2, radius float64, outline, fill cm.FColor, data interface{}) {
+func (d *Drawer) DrawFatSegment(a, b vec.Vec2, radius float64, outline, fillColor cm.FColor, data interface{}) {
 
 	var path vector.Path = vector.Path{}
 	t1 := -float32(math.Atan2(b.Y*flipFactor-a.Y*flipFactor, b.X-a.X)) + math.Pi/2
@@ -73,8 +93,14 @@ func (d *Drawer) DrawFatSegment(a, b vec.Vec2, radius float64, outline, fill cm.
 	path.Arc(float32(a.X), -float32(a.Y*flipFactor), float32(radius), t1, t1+math.Pi, vector.Clockwise)
 	path.Arc(float32(b.X), -float32(b.Y*flipFactor), float32(radius), t2, t2+math.Pi, vector.Clockwise)
 	path.Close()
-	d.drawFill(d.Screen, path, fill.R, fill.G, fill.B, fill.A)
-	d.drawOutline(d.Screen, path, outline.R, outline.G, outline.B, outline.A)
+
+	if !d.FillDisabled {
+		d.fillPath(d.Screen, path, fillColor.R, fillColor.G, fillColor.B, fillColor.A)
+	}
+
+	if !d.StrokeDisabled {
+		d.strokePath(d.Screen, path, outline.R, outline.G, outline.B, outline.A)
+	}
 }
 
 func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outline, fill cm.FColor, data interface{}) {
@@ -154,14 +180,15 @@ func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 		j = i
 		i++
 	}
-
-	d.drawFill(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
+	if !d.FillDisabled {
+		d.fillPath(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
+	}
 }
 func (d *Drawer) DrawDot(size float64, pos vec.Vec2, fill cm.FColor, data interface{}) {
 	var path *vector.Path = &vector.Path{}
 	path.Arc(float32(pos.X), -float32(pos.Y*flipFactor), float32(2), 0, 2*math.Pi, vector.Clockwise)
 	path.Close()
-	d.drawFill(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
+	d.fillPath(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
 }
 
 func (d *Drawer) Flags() uint {
@@ -169,27 +196,28 @@ func (d *Drawer) Flags() uint {
 }
 
 func (d *Drawer) OutlineColor() cm.FColor {
-	return cm.FColor{R: 200.0 / 255.0, G: 210.0 / 255.0, B: 230.0 / 255.0, A: 1}
+	return cm.FColor{1, 1, 1, 0.8}
 }
 
 func (d *Drawer) ShapeColor(shape *cm.Shape, data interface{}) cm.FColor {
 	body := shape.Body()
+
 	if body.IsSleeping() {
-		return cm.FColor{R: .2, G: .2, B: .2, A: 0.5}
+		return cm.FColor{1, 1, 1, 0.35}
 	}
 
 	if body.IdleTime() > shape.Space().SleepTimeThreshold {
-		return cm.FColor{R: .66, G: .66, B: .66, A: 0.5}
+		return cm.FColor{1, 1, 1, 0.4}
 	}
-	return cm.FColor{R: 0.7, G: 0.3, B: 0.6, A: 0.5}
+	return cm.FColor{1, 1, 1, 0.5}
 }
 
 func (d *Drawer) ConstraintColor() cm.FColor {
-	return cm.FColor{R: 0, G: 0.75, B: 0, A: 1}
+	return cm.FColor{0, 0.75, 0, 1}
 }
 
 func (d *Drawer) CollisionPointColor() cm.FColor {
-	return cm.FColor{R: 1, G: 0.1, B: 0.2, A: 1}
+	return cm.FColor{1, 0, 0, 1}
 }
 
 func (d *Drawer) Data() interface{} {
@@ -199,7 +227,7 @@ func (d *Drawer) Data() interface{} {
 func (d *Drawer) HandleMouseEvent(space *cm.Space) {
 	d.handler.handleMouseEvent(d, space)
 }
-func (d *Drawer) drawOutline(screen *ebiten.Image, path vector.Path, r, g, b, a float32) {
+func (d *Drawer) strokePath(screen *ebiten.Image, path vector.Path, r, g, b, a float32) {
 	sop := &vector.StrokeOptions{}
 	sop.Width = d.StrokeWidth
 	sop.LineJoin = vector.LineJoinRound
@@ -214,13 +242,10 @@ func (d *Drawer) drawOutline(screen *ebiten.Image, path vector.Path, r, g, b, a 
 		vs[i].ColorB = b
 		vs[i].ColorA = a
 	}
-	op := &ebiten.DrawTrianglesOptions{}
-	op.FillRule = ebiten.FillAll
-	op.AntiAlias = d.AntiAlias
-	screen.DrawTriangles(vs, is, d.whiteImage, op)
+	screen.DrawTriangles(vs, is, d.whiteImage, d.OptStroke)
 }
 
-func (d *Drawer) drawFill(screen *ebiten.Image, path vector.Path, r, g, b, a float32) {
+func (d *Drawer) fillPath(screen *ebiten.Image, path vector.Path, r, g, b, a float32) {
 	vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
 	for i := range vs {
 		vs[i].DstX -= float32(d.CameraOffset.X)
@@ -232,8 +257,5 @@ func (d *Drawer) drawFill(screen *ebiten.Image, path vector.Path, r, g, b, a flo
 		vs[i].ColorB = b
 		vs[i].ColorA = a
 	}
-	op := &ebiten.DrawTrianglesOptions{}
-	op.FillRule = ebiten.FillAll
-	op.AntiAlias = d.AntiAlias
-	screen.DrawTriangles(vs, is, d.whiteImage, op)
+	screen.DrawTriangles(vs, is, d.whiteImage, d.OptFill)
 }
