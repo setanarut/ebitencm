@@ -37,17 +37,6 @@ func (g *Game) Update() error {
 }
 ```
 
-## Changing coordinate system
-
-Coordinate system is top-left by default, same as Ebitengine. You can correct the coordinate system by setting FlipYAxis to true.
-
-```Go
-  func main() {
-  	game.drawer = ebitencm.NewDrawer()
-	game.drawer.FlipYAxis = false
-  }
-```
-
 ## Examples
 
 Run `basic` example on your local machine

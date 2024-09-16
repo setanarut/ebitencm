@@ -51,12 +51,8 @@ func (h *mouseEventHandler) handleMouseEvent(d *Drawer, space *cm.Space) {
 		x, y = ebiten.CursorPosition()
 	}
 
-	if d.FlipYAxis {
-	} else {
-		y = -y
-	}
-
 	cursorPosition := vec.Vec2{X: float64(x), Y: float64(y)}
+	cursorPosition = cursorPosition.Add(d.CameraOffset)
 	if isJuestTouched {
 		h.mouseBody.SetVelocityVector(vec.Vec2{})
 		h.mouseBody.SetPosition(cursorPosition)

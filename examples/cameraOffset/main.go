@@ -37,6 +37,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func main() {
+	game := &Game{}
 	// Initialising Chipmunk
 	space := cm.NewSpace()
 	space.SleepTimeThreshold = 0.5
@@ -57,12 +58,14 @@ func main() {
 
 	// balls
 	addBall(space, screenWidth*0.5, screenHeight*0.5, 50)
-	// addBall(space, 0, 100, 20)
 
 	// Initialising Ebitengine/v2
-	game := &Game{}
 	game.space = space
 	game.drawer = ebitencm.NewDrawer()
+
+	// Camera offset
+	game.drawer.CameraOffset = vec.Vec2{100, 40}
+
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("ebiten-chipmunk - ball")
 	if err := ebiten.RunGame(game); err != nil {

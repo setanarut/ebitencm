@@ -15,3 +15,5 @@ require (
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 )
+
+retract [v1.1.0, v1.1.1]

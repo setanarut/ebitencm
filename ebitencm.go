@@ -11,28 +11,28 @@ import (
 )
 
 const DrawPointLineScale = 1.0
+const flipFactor = -1.0
 
 type Drawer struct {
 	Screen      *ebiten.Image
 	AntiAlias   bool
 	StrokeWidth float32
-	FlipYAxis   bool
+	// Offset for screen drawing
+	CameraOffset vec.Vec2
 
 	// private
-	handler       mouseEventHandler
-	whiteImage    *ebiten.Image
-	DrawingOffset vec.Vec2
+	handler    mouseEventHandler
+	whiteImage *ebiten.Image
 }
 
 func NewDrawer() *Drawer {
 	whiteImage := ebiten.NewImage(3, 3)
 	whiteImage.Fill(color.White)
 	return &Drawer{
-		AntiAlias:     true,
-		StrokeWidth:   1,
-		FlipYAxis:     true,
-		DrawingOffset: vec.Vec2{},
-		whiteImage:    whiteImage,
+		AntiAlias:    true,
+		StrokeWidth:  1,
+		CameraOffset: vec.Vec2{},
+		whiteImage:   whiteImage,
 	}
 }
 
@@ -42,31 +42,23 @@ func (d *Drawer) WithScreen(screen *ebiten.Image) *Drawer {
 }
 
 func (d *Drawer) DrawCircle(pos vec.Vec2, angle, radius float64, outline, fill cm.FColor, data interface{}) {
-	var f float64 = 1
-	if d.FlipYAxis {
-		f = -1
-		angle *= f
-	}
+	angle *= flipFactor
 
 	path := &vector.Path{}
-	path.Arc(float32(pos.X), -float32(pos.Y*f), float32(radius), 0, 2*math.Pi, vector.Clockwise)
+	path.Arc(float32(pos.X), -float32(pos.Y*flipFactor), float32(radius), 0, 2*math.Pi, vector.Clockwise)
 	d.drawFill(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
 
-	path.MoveTo(float32(pos.X), -float32(pos.Y*f))
-	path.LineTo(float32(pos.X+math.Cos(angle)*radius), -float32(pos.Y*f+math.Sin(angle)*radius))
+	path.MoveTo(float32(pos.X), -float32(pos.Y*flipFactor))
+	path.LineTo(float32(pos.X+math.Cos(angle)*radius), -float32(pos.Y*flipFactor+math.Sin(angle)*radius))
 	path.Close()
 	d.drawOutline(d.Screen, *path, outline.R, outline.G, outline.B, outline.A)
 }
 
 func (d *Drawer) DrawSegment(a, b vec.Vec2, fill cm.FColor, data interface{}) {
-	var f float64 = 1
-	if d.FlipYAxis {
-		f = -1
-	}
 
 	var path *vector.Path = &vector.Path{}
-	path.MoveTo(float32(a.X), -float32(a.Y*f))
-	path.LineTo(float32(b.X), -float32(b.Y*f))
+	path.MoveTo(float32(a.X), -float32(a.Y*flipFactor))
+	path.LineTo(float32(b.X), -float32(b.Y*flipFactor))
 	path.Close()
 
 	d.drawFill(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
@@ -74,27 +66,18 @@ func (d *Drawer) DrawSegment(a, b vec.Vec2, fill cm.FColor, data interface{}) {
 }
 
 func (d *Drawer) DrawFatSegment(a, b vec.Vec2, radius float64, outline, fill cm.FColor, data interface{}) {
-	var f float64 = 1
-	if d.FlipYAxis {
-		f = -1
-	}
 
 	var path vector.Path = vector.Path{}
-	t1 := -float32(math.Atan2(b.Y*f-a.Y*f, b.X-a.X)) + math.Pi/2
+	t1 := -float32(math.Atan2(b.Y*flipFactor-a.Y*flipFactor, b.X-a.X)) + math.Pi/2
 	t2 := t1 + math.Pi
-	path.Arc(float32(a.X), -float32(a.Y*f), float32(radius), t1, t1+math.Pi, vector.Clockwise)
-	path.Arc(float32(b.X), -float32(b.Y*f), float32(radius), t2, t2+math.Pi, vector.Clockwise)
+	path.Arc(float32(a.X), -float32(a.Y*flipFactor), float32(radius), t1, t1+math.Pi, vector.Clockwise)
+	path.Arc(float32(b.X), -float32(b.Y*flipFactor), float32(radius), t2, t2+math.Pi, vector.Clockwise)
 	path.Close()
 	d.drawFill(d.Screen, path, fill.R, fill.G, fill.B, fill.A)
 	d.drawOutline(d.Screen, path, outline.R, outline.G, outline.B, outline.A)
 }
 
 func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outline, fill cm.FColor, data interface{}) {
-	var flipYFactor float64 = 1
-	if d.FlipYAxis {
-		flipYFactor = -1
-	}
-
 	type ExtrudeVerts struct {
 		offset, n vec.Vec2
 	}
@@ -120,10 +103,10 @@ func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 		v1 := verts[i+1].Add(extrude[i+1].offset.Scale(inset))
 		v2 := verts[i+2].Add(extrude[i+2].offset.Scale(inset))
 
-		path.MoveTo(float32(v0.X), -float32(v0.Y*flipYFactor))
-		path.LineTo(float32(v1.X), -float32(v1.Y*flipYFactor))
-		path.LineTo(float32(v2.X), -float32(v2.Y*flipYFactor))
-		path.LineTo(float32(v0.X), -float32(v0.Y*flipYFactor))
+		path.MoveTo(float32(v0.X), -float32(v0.Y*flipFactor))
+		path.LineTo(float32(v1.X), -float32(v1.Y*flipFactor))
+		path.LineTo(float32(v2.X), -float32(v2.Y*flipFactor))
+		path.LineTo(float32(v0.X), -float32(v0.Y*flipFactor))
 	}
 
 	outset := 1.0/DrawPointLineScale + radius - inset
@@ -148,25 +131,25 @@ func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 		outer2 := innerA.Add(offsetA.Scale(outset))
 		outer3 := innerA.Add(nA.Scale(outset))
 
-		path.MoveTo(float32(inner0.X), -float32(inner0.Y*flipYFactor))
-		path.LineTo(float32(inner1.X), -float32(inner1.Y*flipYFactor))
-		path.LineTo(float32(outer1.X), -float32(outer1.Y*flipYFactor))
-		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipYFactor))
+		path.MoveTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
+		path.LineTo(float32(inner1.X), -float32(inner1.Y*flipFactor))
+		path.LineTo(float32(outer1.X), -float32(outer1.Y*flipFactor))
+		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
 
-		path.MoveTo(float32(inner0.X), -float32(inner0.Y*flipYFactor))
-		path.LineTo(float32(outer0.X), -float32(outer0.Y*flipYFactor))
-		path.LineTo(float32(outer1.X), -float32(outer1.Y*flipYFactor))
-		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipYFactor))
+		path.MoveTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
+		path.LineTo(float32(outer0.X), -float32(outer0.Y*flipFactor))
+		path.LineTo(float32(outer1.X), -float32(outer1.Y*flipFactor))
+		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
 
-		path.MoveTo(float32(inner0.X), -float32(inner0.Y*flipYFactor))
-		path.LineTo(float32(outer0.X), -float32(outer0.Y*flipYFactor))
-		path.LineTo(float32(outer2.X), -float32(outer2.Y*flipYFactor))
-		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipYFactor))
+		path.MoveTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
+		path.LineTo(float32(outer0.X), -float32(outer0.Y*flipFactor))
+		path.LineTo(float32(outer2.X), -float32(outer2.Y*flipFactor))
+		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
 
-		path.MoveTo(float32(inner0.X), -float32(inner0.Y*flipYFactor))
-		path.LineTo(float32(outer2.X), -float32(outer2.Y*flipYFactor))
-		path.LineTo(float32(outer3.X), -float32(outer3.Y*flipYFactor))
-		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipYFactor))
+		path.MoveTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
+		path.LineTo(float32(outer2.X), -float32(outer2.Y*flipFactor))
+		path.LineTo(float32(outer3.X), -float32(outer3.Y*flipFactor))
+		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
 
 		j = i
 		i++
@@ -175,19 +158,9 @@ func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 	d.drawFill(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
 }
 func (d *Drawer) DrawDot(size float64, pos vec.Vec2, fill cm.FColor, data interface{}) {
-	var f float64 = 1
-	if d.FlipYAxis {
-		f = -1
-	}
-
 	var path *vector.Path = &vector.Path{}
-	path.Arc(
-		float32(pos.X),
-		-float32(pos.Y*f),
-		float32(2),
-		0, 2*math.Pi, vector.Clockwise)
+	path.Arc(float32(pos.X), -float32(pos.Y*flipFactor), float32(2), 0, 2*math.Pi, vector.Clockwise)
 	path.Close()
-
 	d.drawFill(d.Screen, *path, fill.R, fill.G, fill.B, fill.A)
 }
 
@@ -226,18 +199,14 @@ func (d *Drawer) Data() interface{} {
 func (d *Drawer) HandleMouseEvent(space *cm.Space) {
 	d.handler.handleMouseEvent(d, space)
 }
-func (d *Drawer) drawOutline(
-	screen *ebiten.Image,
-	path vector.Path,
-	r, g, b, a float32,
-) {
+func (d *Drawer) drawOutline(screen *ebiten.Image, path vector.Path, r, g, b, a float32) {
 	sop := &vector.StrokeOptions{}
 	sop.Width = d.StrokeWidth
 	sop.LineJoin = vector.LineJoinRound
 	vs, is := path.AppendVerticesAndIndicesForStroke(nil, nil, sop)
 	for i := range vs {
-		vs[i].DstX -= float32(d.DrawingOffset.X)
-		vs[i].DstY -= float32(d.DrawingOffset.Y)
+		vs[i].DstX -= float32(d.CameraOffset.X)
+		vs[i].DstY -= float32(d.CameraOffset.Y)
 		vs[i].SrcX = 1
 		vs[i].SrcY = 1
 		vs[i].ColorR = r
@@ -251,15 +220,11 @@ func (d *Drawer) drawOutline(
 	screen.DrawTriangles(vs, is, d.whiteImage, op)
 }
 
-func (d *Drawer) drawFill(
-	screen *ebiten.Image,
-	path vector.Path,
-	r, g, b, a float32,
-) {
+func (d *Drawer) drawFill(screen *ebiten.Image, path vector.Path, r, g, b, a float32) {
 	vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
 	for i := range vs {
-		vs[i].DstX -= float32(d.DrawingOffset.X)
-		vs[i].DstY -= float32(d.DrawingOffset.Y)
+		vs[i].DstX -= float32(d.CameraOffset.X)
+		vs[i].DstY -= float32(d.CameraOffset.Y)
 		vs[i].SrcX = 1
 		vs[i].SrcY = 1
 		vs[i].ColorR = r
