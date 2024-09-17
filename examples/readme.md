@@ -5,7 +5,8 @@
 - Camera Position = WASD
 - Camera Rotation = Q / E
 - Camera Zoom = Z / X
-- Draggin = Cursor
+- Drag Object = Cursor
+- Reset Camera = Backspace
 
 ```
 go run github.com/setanarut/ebitencm/examples/camera@latest
