@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	screenSize = vec.Vec2{640, 640}
+	screenSize = vec.Vec2{640, 480}
 )
 
 type Game struct {
