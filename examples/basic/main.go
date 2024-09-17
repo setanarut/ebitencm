@@ -37,6 +37,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func main() {
+
+	drawer = ebitencm.NewDrawer()
 	// Initialising Chipmunk
 	space = cm.NewSpace()
 	space.SetGravity(vec.Vec2{0, 100})
@@ -51,9 +53,9 @@ func main() {
 	// Balls
 	addBall(space, vec.Vec2{center.X, 0}, 50)
 	addBall(space, vec.Vec2{center.X, 0}, 30)
-	// Initialising Ebitengine/v2
+
+	// Initialising Ebitengine
 	game := &Game{}
-	drawer = ebitencm.NewDrawer()
 	ebiten.SetWindowSize(int(Screen.X), int(Screen.Y))
 	ebiten.RunGame(game)
 }

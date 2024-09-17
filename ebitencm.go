@@ -14,6 +14,7 @@ const DrawPointLineScale = 1.0
 const flipFactor = -1.0
 
 type Drawer struct {
+	// Ebitengine screen
 	Screen      *ebiten.Image
 	StrokeWidth float32
 	// Offset for screen drawing
@@ -46,6 +47,10 @@ func NewDrawer() *Drawer {
 func (d *Drawer) WithScreen(screen *ebiten.Image) *Drawer {
 	d.Screen = screen
 	return d
+}
+
+func (d *Drawer) SetScreen(screen *ebiten.Image) {
+	d.Screen = screen
 }
 func (d *Drawer) SetStrokeAntialias(antialias bool) {
 	d.OptStroke.AntiAlias = antialias
