@@ -14,8 +14,7 @@ import (
 
 var Screen vec.Vec2 = vec.Vec2{640, 480}
 var friction, elasticity, gravity float64 = 0.8, 0.9, 100
-var tick float64
-var target = vec.Vec2{}
+var targetOffset = vec.Vec2{}
 
 type Game struct {
 	cam    *kamera.Camera
@@ -35,10 +34,9 @@ func (g *Game) Update() error {
 	g.drawer.HandleMouseEvent(g.space)
 
 	pos := g.ball.Position()
-	pos.X += tick
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) {
-		target = pos
+		targetOffset = vec.Vec2{}
 		g.cam.Reset()
 	}
 
@@ -62,20 +60,21 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
-		target.X += 10
+		targetOffset.X += 10
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
-		target.X -= 10
+		targetOffset.X -= 10
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		target.Y -= 10
+		targetOffset.Y -= 10
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		target.Y += 10
+		targetOffset.Y += 10
 	}
 
-	g.cam.LookAt(target.X, target.Y)
-	// g.cam.LookAt(pos.X, pos.Y)
+	// g.cam.LookAt(target.X, target.Y)
+	pos = pos.Add(targetOffset)
+	g.cam.LookAt(pos.X, pos.Y)
 
 	return nil
 }
@@ -139,8 +138,8 @@ func main() {
 	game.drawer = ebitencm.NewDrawer()
 	game.drawer.OptStroke.AntiAlias = true
 	game.drawer.OptFill.AntiAlias = true
-	game.drawer.FillDisabled = true
-	game.drawer.StrokeDisabled = true
+	// game.drawer.FillDisabled = true
+	// game.drawer.StrokeDisabled = true
 
 	ebiten.SetWindowSize(int(Screen.X), int(Screen.Y))
 	ebiten.SetWindowTitle("ebitencm camera example")

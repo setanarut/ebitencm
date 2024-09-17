@@ -37,13 +37,36 @@ func (g *Game) Update() error {
 }
 ```
 
+## Camera transform
+
+Use `Drawer.GeoM{}` for camera transform. The cursor position is calculated according to this matrix. Don't forget to reset GeoM with `GeoM.Reset()` in `Update()`. Here is an example with the [setanarut/kamera](https://github.com/setanarut/kamera) package.
+
+```Go
+func (g *Game) Update() error {
+	g.space.Step(1 / 60.0)
+
+	// Apply camera transform to drawer
+	g.drawer.GeoM.Reset()
+	g.cam.ApplyCameraTransform(g.drawer.GeoM)
+
+	// Enable cursor dragging
+	g.drawer.HandleMouseEvent(g.space)
+```
+
+### Camera demo
+
+Run camera example on your local machine
+
+```
+go run github.com/setanarut/ebitencm/examples/camera@latest
+```
+
+- Camera Position = WASD
+- Camera Rotation = Q / E
+- Camera Zoom = Z / X
+- Drag object = Cursor
+- Reset camera = Backspace
+
 ## Examples
 
-Run `basic` example on your local machine
-```
-go run github.com/setanarut/ebitencm/examples/basic@latest
-```
-
 Browse to the [examples](./examples/) folder for all examples.
-
-

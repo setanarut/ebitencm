@@ -19,7 +19,7 @@ type Drawer struct {
 	StrokeWidth float32
 	// GeoM for drawing vertices. Useful for cameras
 	GeoM *ebiten.GeoM
-	// Disable filling except dots.
+	// Disable filling except DrawDot().
 	FillDisabled bool
 	// Disable strokes
 	StrokeDisabled bool
