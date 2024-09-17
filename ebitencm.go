@@ -17,9 +17,9 @@ type Drawer struct {
 	// Ebitengine screen
 	Screen      *ebiten.Image
 	StrokeWidth float32
-	// Offset for screen drawing
-	CameraOffset vec.Vec2
-	// Disable filling except dots.
+	// GeoM for drawing vertices. Useful for cameras
+	GeoM *ebiten.GeoM
+	// Disable filling except DrawDot().
 	FillDisabled bool
 	// Disable strokes
 	StrokeDisabled bool
@@ -36,11 +36,12 @@ func NewDrawer() *Drawer {
 	whiteImage := ebiten.NewImage(3, 3)
 	whiteImage.Fill(color.White)
 	return &Drawer{
-		StrokeWidth:  1,
-		CameraOffset: vec.Vec2{},
-		whiteImage:   whiteImage,
-		OptStroke:    &ebiten.DrawTrianglesOptions{},
-		OptFill:      &ebiten.DrawTrianglesOptions{},
+		StrokeWidth: 1,
+		OptStroke:   &ebiten.DrawTrianglesOptions{},
+		OptFill:     &ebiten.DrawTrianglesOptions{},
+		//private
+		whiteImage: whiteImage,
+		GeoM:       &ebiten.GeoM{},
 	}
 }
 
@@ -181,7 +182,6 @@ func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 		path.LineTo(float32(outer2.X), -float32(outer2.Y*flipFactor))
 		path.LineTo(float32(outer3.X), -float32(outer3.Y*flipFactor))
 		path.LineTo(float32(inner0.X), -float32(inner0.Y*flipFactor))
-
 		j = i
 		i++
 	}
@@ -237,30 +237,30 @@ func (d *Drawer) strokePath(screen *ebiten.Image, path vector.Path, r, g, b, a f
 	sop.Width = d.StrokeWidth
 	sop.LineJoin = vector.LineJoinRound
 	vs, is := path.AppendVerticesAndIndicesForStroke(nil, nil, sop)
-	for i := range vs {
-		vs[i].DstX -= float32(d.CameraOffset.X)
-		vs[i].DstY -= float32(d.CameraOffset.Y)
-		vs[i].SrcX = 1
-		vs[i].SrcY = 1
-		vs[i].ColorR = r
-		vs[i].ColorG = g
-		vs[i].ColorB = b
-		vs[i].ColorA = a
-	}
+	applyMatrixToVertices(vs, d.GeoM, r, g, b, a)
+
 	screen.DrawTriangles(vs, is, d.whiteImage, d.OptStroke)
 }
 
 func (d *Drawer) fillPath(screen *ebiten.Image, path vector.Path, r, g, b, a float32) {
 	vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
-	for i := range vs {
-		vs[i].DstX -= float32(d.CameraOffset.X)
-		vs[i].DstY -= float32(d.CameraOffset.Y)
-		vs[i].SrcX = 1
-		vs[i].SrcY = 1
-		vs[i].ColorR = r
-		vs[i].ColorG = g
-		vs[i].ColorB = b
-		vs[i].ColorA = a
-	}
+	applyMatrixToVertices(vs, d.GeoM, r, g, b, a)
 	screen.DrawTriangles(vs, is, d.whiteImage, d.OptFill)
+}
+
+// RotateAbout rotates point about origin
+func RotateAbout(point vec.Vec2, angle float64, origin vec.Vec2) vec.Vec2 {
+	b := vec.Vec2{}
+	b.X = math.Cos(angle)*(point.X-origin.X) - math.Sin(angle)*(point.Y-origin.Y) + origin.X
+	b.Y = math.Sin(angle)*(point.X-origin.X) + math.Cos(angle)*(point.Y-origin.Y) + origin.Y
+	return b
+}
+
+func applyMatrixToVertices(vs []ebiten.Vertex, matrix *ebiten.GeoM, r, g, b, a float32) {
+	for i := range vs {
+		x, y := matrix.Apply(float64(vs[i].DstX), float64(vs[i].DstY))
+		vs[i].DstX, vs[i].DstY = float32(x), float32(y)
+		vs[i].SrcX, vs[i].SrcY = 1, 1
+		vs[i].ColorR, vs[i].ColorG, vs[i].ColorB, vs[i].ColorA = r, g, b, a
+	}
 }

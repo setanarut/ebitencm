@@ -22,7 +22,7 @@ type mouseEventHandler struct {
 	touchIDs   []ebiten.TouchID
 }
 
-func (h *mouseEventHandler) handleMouseEvent(d *Drawer, space *cm.Space) {
+func (h *mouseEventHandler) handleMouseEvent(drawer *Drawer, space *cm.Space) {
 	if h.mouseBody == nil {
 		h.mouseBody = cm.NewKinematicBody()
 	}
@@ -51,19 +51,26 @@ func (h *mouseEventHandler) handleMouseEvent(d *Drawer, space *cm.Space) {
 		x, y = ebiten.CursorPosition()
 	}
 
-	cursorPosition := vec.Vec2{X: float64(x), Y: float64(y)}
-	cursorPosition = cursorPosition.Add(d.CameraOffset)
+	// ! GeoM uygulanacak
+	cursor := vec.Vec2{X: float64(x), Y: float64(y)}
+
+	// cursor.X, cursor.Y = drawer.GeoM.Apply(cursor.X, cursor.Y)
+	cursor = ScreenToWorld(cursor, *drawer.GeoM)
+
+	// offX, offY := drawer.Camera.TopLeft()
+	// cursorPosition = cursorPosition.Add(vec.Vec2{offX, offY})
+
 	if isJuestTouched {
 		h.mouseBody.SetVelocityVector(vec.Vec2{})
-		h.mouseBody.SetPosition(cursorPosition)
+		h.mouseBody.SetPosition(cursor)
 	} else {
-		newPoint := h.mouseBody.Position().Lerp(cursorPosition, 0.25)
+		newPoint := h.mouseBody.Position().Lerp(cursor, 0.25)
 		h.mouseBody.SetVelocityVector(newPoint.Sub(h.mouseBody.Position()).Scale(60.0))
 		h.mouseBody.SetPosition(newPoint)
 	}
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || isJuestTouched {
-		h.onMouseDown(space, cursorPosition)
+		h.onMouseDown(space, cursor)
 	}
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		h.onMouseUp(space)
@@ -98,4 +105,16 @@ func (h *mouseEventHandler) onMouseUp(space *cm.Space) {
 	}
 	space.RemoveConstraint(h.mouseJoint)
 	h.mouseJoint = nil
+}
+
+// ScreenToWorld converts screen-space coordinates to world-space
+func ScreenToWorld(screenPoint vec.Vec2, g ebiten.GeoM) vec.Vec2 {
+	if g.IsInvertible() {
+		g.Invert()
+		worldX, worldY := g.Apply(screenPoint.X, screenPoint.Y)
+		return vec.Vec2{worldX, worldY}
+	} else {
+		// When scaling it can happened that matrix is not invertable
+		return vec.Vec2{math.NaN(), math.NaN()}
+	}
 }
