@@ -10,7 +10,7 @@ import (
 	"github.com/setanarut/vec"
 )
 
-const DrawPointLineScale = 1.0
+const drawPointLineScale = 1.0
 const flipFactor = -1.0
 
 type Drawer struct {
@@ -129,7 +129,7 @@ func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 
 	var path *vector.Path = &vector.Path{}
 
-	inset := -math.Max(0, 1.0/DrawPointLineScale-radius)
+	inset := -math.Max(0, 1.0/drawPointLineScale-radius)
 	for i := 0; i < count-2; i++ {
 		v0 := verts[0].Add(extrude[0].offset.Scale(inset))
 		v1 := verts[i+1].Add(extrude[i+1].offset.Scale(inset))
@@ -141,7 +141,7 @@ func (d *Drawer) DrawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 		path.LineTo(float32(v0.X), -float32(v0.Y*flipFactor))
 	}
 
-	outset := 1.0/DrawPointLineScale + radius - inset
+	outset := 1.0/drawPointLineScale + radius - inset
 	j := count - 1
 	for i := 0; i < count; {
 		vA := verts[i]
@@ -232,13 +232,13 @@ func (d *Drawer) Data() interface{} {
 func (d *Drawer) HandleMouseEvent(space *cm.Space) {
 	d.handler.handleMouseEvent(d, space)
 }
+
 func (d *Drawer) strokePath(screen *ebiten.Image, path vector.Path, r, g, b, a float32) {
 	sop := &vector.StrokeOptions{}
 	sop.Width = d.StrokeWidth
 	sop.LineJoin = vector.LineJoinRound
 	vs, is := path.AppendVerticesAndIndicesForStroke(nil, nil, sop)
 	applyMatrixToVertices(vs, d.GeoM, r, g, b, a)
-
 	screen.DrawTriangles(vs, is, d.whiteImage, d.OptStroke)
 }
 
@@ -248,19 +248,23 @@ func (d *Drawer) fillPath(screen *ebiten.Image, path vector.Path, r, g, b, a flo
 	screen.DrawTriangles(vs, is, d.whiteImage, d.OptFill)
 }
 
-// RotateAbout rotates point about origin
-func RotateAbout(point vec.Vec2, angle float64, origin vec.Vec2) vec.Vec2 {
-	b := vec.Vec2{}
-	b.X = math.Cos(angle)*(point.X-origin.X) - math.Sin(angle)*(point.Y-origin.Y) + origin.X
-	b.Y = math.Sin(angle)*(point.X-origin.X) + math.Cos(angle)*(point.Y-origin.Y) + origin.Y
-	return b
-}
-
 func applyMatrixToVertices(vs []ebiten.Vertex, matrix *ebiten.GeoM, r, g, b, a float32) {
 	for i := range vs {
 		x, y := matrix.Apply(float64(vs[i].DstX), float64(vs[i].DstY))
 		vs[i].DstX, vs[i].DstY = float32(x), float32(y)
 		vs[i].SrcX, vs[i].SrcY = 1, 1
 		vs[i].ColorR, vs[i].ColorG, vs[i].ColorB, vs[i].ColorA = r, g, b, a
+	}
+}
+
+// ScreenToWorld converts screen-space coordinates to world-space
+func ScreenToWorld(screenPoint vec.Vec2, cameraGeoM ebiten.GeoM) vec.Vec2 {
+	if cameraGeoM.IsInvertible() {
+		cameraGeoM.Invert()
+		worldX, worldY := cameraGeoM.Apply(screenPoint.X, screenPoint.Y)
+		return vec.Vec2{worldX, worldY}
+	} else {
+		// When scaling it can happened that matrix is not invertable
+		return vec.Vec2{math.NaN(), math.NaN()}
 	}
 }

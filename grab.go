@@ -51,14 +51,8 @@ func (h *mouseEventHandler) handleMouseEvent(drawer *Drawer, space *cm.Space) {
 		x, y = ebiten.CursorPosition()
 	}
 
-	// ! GeoM uygulanacak
 	cursor := vec.Vec2{X: float64(x), Y: float64(y)}
-
-	// cursor.X, cursor.Y = drawer.GeoM.Apply(cursor.X, cursor.Y)
 	cursor = ScreenToWorld(cursor, *drawer.GeoM)
-
-	// offX, offY := drawer.Camera.TopLeft()
-	// cursorPosition = cursorPosition.Add(vec.Vec2{offX, offY})
 
 	if isJuestTouched {
 		h.mouseBody.SetVelocityVector(vec.Vec2{})
@@ -105,16 +99,4 @@ func (h *mouseEventHandler) onMouseUp(space *cm.Space) {
 	}
 	space.RemoveConstraint(h.mouseJoint)
 	h.mouseJoint = nil
-}
-
-// ScreenToWorld converts screen-space coordinates to world-space
-func ScreenToWorld(screenPoint vec.Vec2, g ebiten.GeoM) vec.Vec2 {
-	if g.IsInvertible() {
-		g.Invert()
-		worldX, worldY := g.Apply(screenPoint.X, screenPoint.Y)
-		return vec.Vec2{worldX, worldY}
-	} else {
-		// When scaling it can happened that matrix is not invertable
-		return vec.Vec2{math.NaN(), math.NaN()}
-	}
 }
