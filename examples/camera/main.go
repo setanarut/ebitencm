@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math/rand/v2"
 
@@ -94,8 +95,10 @@ func addBall(space *cm.Space, pos vec.Vec2, radius float64) *cm.Body {
 	body := space.AddBody(cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{})))
 	body.SetPosition(pos)
 	shape := space.AddShape(cm.NewCircle(body, radius, vec.Vec2{}))
+	fmt.Println(shape.Filter)
 	shape.SetElasticity(elasticity)
 	shape.SetFriction(friction)
+
 	return body
 }
 

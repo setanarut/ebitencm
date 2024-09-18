@@ -9,11 +9,12 @@ import (
 	"github.com/setanarut/vec"
 )
 
-var GrabableMaskBit uint = 1 << 31
-var grabFilter cm.ShapeFilter = cm.ShapeFilter{
+const GrabableMaskBit uint = 1 << 31
+
+var GrabFilter cm.ShapeFilter = cm.ShapeFilter{
 	Group:      cm.NoGroup,
 	Categories: GrabableMaskBit,
-	Mask:       GrabableMaskBit,
+	Mask:       cm.AllCategories,
 }
 
 type mouseEventHandler struct {
@@ -75,7 +76,7 @@ func (h *mouseEventHandler) onMouseDown(space *cm.Space, cursorPosition vec.Vec2
 	// give the mouse click a little radius to make it easier to click small shapes.
 	radius := 5.0
 
-	info := space.PointQueryNearest(cursorPosition, radius, grabFilter)
+	info := space.PointQueryNearest(cursorPosition, radius, GrabFilter)
 
 	if info.Shape != nil && info.Shape.Body().Mass() < cm.Infinity {
 		var nearest vec.Vec2
