@@ -17,6 +17,8 @@ type Drawer struct {
 	// Ebitengine screen
 	Screen      *ebiten.Image
 	StrokeWidth float32
+	// Drawing colors
+	Theme *Theme
 	// GeoM for drawing vertices. Useful for cameras
 	GeoM *ebiten.GeoM
 	// Disable filling except DrawDot().
@@ -37,11 +39,12 @@ func NewDrawer() *Drawer {
 	whiteImage.Fill(color.White)
 	return &Drawer{
 		StrokeWidth: 1,
-		OptStroke:   &ebiten.DrawTrianglesOptions{},
-		OptFill:     &ebiten.DrawTrianglesOptions{},
-		//private
+		OptStroke:   &ebiten.DrawTrianglesOptions{AntiAlias: true},
+		OptFill:     &ebiten.DrawTrianglesOptions{AntiAlias: true},
+
 		whiteImage: whiteImage,
 		GeoM:       &ebiten.GeoM{},
+		Theme:      DefaultTheme(),
 	}
 }
 
@@ -201,28 +204,28 @@ func (d *Drawer) Flags() uint {
 }
 
 func (d *Drawer) OutlineColor() cm.FColor {
-	return cm.FColor{1, 1, 1, 0.8}
+	return toFColor(d.Theme.Outline)
 }
 
 func (d *Drawer) ShapeColor(shape *cm.Shape, data interface{}) cm.FColor {
 	body := shape.Body()
 
 	if body.IsSleeping() {
-		return cm.FColor{1, 1, 1, 0.35}
+		return toFColor(d.Theme.ShapeSleeping)
 	}
 
 	if body.IdleTime() > shape.Space().SleepTimeThreshold {
-		return cm.FColor{1, 1, 1, 0.4}
+		return toFColor(d.Theme.ShapeIdle)
 	}
-	return cm.FColor{1, 1, 1, 0.5}
+	return toFColor(d.Theme.Shape)
 }
 
 func (d *Drawer) ConstraintColor() cm.FColor {
-	return cm.FColor{0, 0.75, 0, 1}
+	return toFColor(d.Theme.Constraint)
 }
 
 func (d *Drawer) CollisionPointColor() cm.FColor {
-	return cm.FColor{1, 0, 0, 1}
+	return toFColor(d.Theme.CollisionPoint)
 }
 
 func (d *Drawer) Data() interface{} {
@@ -266,5 +269,30 @@ func ScreenToWorld(screenPoint vec.Vec2, cameraGeoM ebiten.GeoM) vec.Vec2 {
 	} else {
 		// When scaling it can happened that matrix is not invertable
 		return vec.Vec2{math.NaN(), math.NaN()}
+	}
+}
+
+type Theme struct {
+	Outline                         color.RGBA
+	Shape, ShapeSleeping, ShapeIdle color.RGBA
+	Constraint, CollisionPoint      color.RGBA
+}
+
+func toFColor(c color.RGBA) cm.FColor {
+	r := float32(c.R) / 255.0
+	g := float32(c.G) / 255.0
+	b := float32(c.B) / 255.0
+	a := float32(c.A) / 255.0
+	return cm.FColor{r, g, b, a}
+}
+
+func DefaultTheme() *Theme {
+	return &Theme{
+		Outline:        color.RGBA{200, 210, 230, 255},
+		ShapeSleeping:  color.RGBA{51, 51, 51, 128},
+		ShapeIdle:      color.RGBA{168, 168, 168, 128},
+		Shape:          color.RGBA{178, 76, 153, 128},
+		Constraint:     color.RGBA{0, 191, 0, 255},
+		CollisionPoint: color.RGBA{255, 25, 51, 255},
 	}
 }

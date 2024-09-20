@@ -1,5 +1,5 @@
-github.com/ebitengine/gomobile v0.0.0-20240911145611-4856209ac325 h1:Gk1XUEttOk0/hb6Tq3WkmutWa0ZLhNn/6fc6XZpM7tM=
-github.com/ebitengine/gomobile v0.0.0-20240911145611-4856209ac325/go.mod h1:ulhSQcbPioQrallSuIzF8l1NKQoD7xmMZc5NxzibUMY=
+github.com/ebitengine/gomobile v0.0.0-20240518074828-e86332849895 h1:48bCqKTuD7Z0UovDfvpCn7wZ0GUZ+yosIteNDthn3FU=
+github.com/ebitengine/gomobile v0.0.0-20240518074828-e86332849895/go.mod h1:XZdLv05c5hOZm3fM2NlJ92FyEZjnslcMcNRrhxs8+8M=
 github.com/ebitengine/hideconsole v1.0.0 h1:5J4U0kXF+pv/DhiXt5/lTz0eO5ogJ1iXb8Yj1yReDqE=
 github.com/ebitengine/hideconsole v1.0.0/go.mod h1:hTTBTvVYWKBuxPr7peweneWdkUwEuHuB3C1R/ielR1A=
 github.com/ebitengine/purego v0.7.1 h1:6/55d26lG3o9VCZX8lping+bZcmShseiqlh2bnUDiPA=
@@ -16,8 +16,8 @@ github.com/setanarut/kamera/v2 v2.5.2 h1:yzW4/Bdb1Zlr7VmzEm4TW01Bh+W6MgjjfXJpskt
 github.com/setanarut/kamera/v2 v2.5.2/go.mod h1:XxIMAowz4s+6uTR+4B8YkinDrvOechvhCAH3AlzP9iU=
 github.com/setanarut/vec v1.1.0 h1:Tmei65+2EsQzNB+0xkpNgcXGTZTT0gEUdZRjVb2CuuQ=
 github.com/setanarut/vec v1.1.0/go.mod h1:ZDoKd7F60rWLgCK58novWOCe5ePiXfSkwtmuOSSC9TU=
-golang.org/x/image v0.20.0 h1:7cVCUjQwfL18gyBJOmYvptfSHS8Fb3YUDtfLIZ7Nbpw=
-golang.org/x/image v0.20.0/go.mod h1:0a88To4CYVBAHp5FXJm8o7QbUl37Vd85ply1vyD8auM=
+golang.org/x/image v0.18.0 h1:jGzIakQa/ZXI1I0Fxvaa9W7yP25TqT6cHIHn+6CqvSQ=
+golang.org/x/image v0.18.0/go.mod h1:4yyo5vMFQjVjUcVk4jEQcU9MGy/rulF5WvUILseCM2E=
 golang.org/x/sync v0.8.0 h1:3NFvSEYkUoMifnESzZl15y791HH1qU2xm6eCJU5ZPXQ=
 golang.org/x/sync v0.8.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
 golang.org/x/sys v0.25.0 h1:r+8e+loiHxRqhXVl6ML1nO3l1+oFoWbnlu2Ehimmi34=

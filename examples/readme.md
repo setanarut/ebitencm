@@ -1,6 +1,6 @@
 # Examples
 
-## camera
+## Camera controls
 
 - Camera Position = WASD
 - Camera Rotation = Q / E
@@ -8,8 +8,16 @@
 - Drag Object = Cursor
 - Reset Camera = Backspace
 
+## theojansen_cam
+
 ```
-go run github.com/setanarut/ebitencm/examples/camera@latest
+go run github.com/setanarut/ebitencm/examples/theojansen_cam@latest
+```
+
+## balls_cam
+
+```
+go run github.com/setanarut/ebitencm/examples/balls_cam@latest
 ```
 
 ## basic
