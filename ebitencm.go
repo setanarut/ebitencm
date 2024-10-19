@@ -208,13 +208,13 @@ func (d *Drawer) OutlineColor() cm.FColor {
 }
 
 func (d *Drawer) ShapeColor(shape *cm.Shape, data interface{}) cm.FColor {
-	body := shape.Body()
+	body := shape.Body
 
 	if body.IsSleeping() {
 		return toFColor(d.Theme.ShapeSleeping)
 	}
 
-	if body.IdleTime() > shape.Space().SleepTimeThreshold {
+	if body.IdleTime() > shape.Space.SleepTimeThreshold {
 		return toFColor(d.Theme.ShapeIdle)
 	}
 	return toFColor(d.Theme.Shape)

@@ -52,10 +52,13 @@ func main() {
 		{0, screenHeight}, {0, 0},
 	}
 	for i := 0; i < len(walls)-1; i += 2 {
-		shape := space.AddShape(cm.NewSegment(space.StaticBody, walls[i], walls[i+1], 10))
-		shape.SetElasticity(0.5)
-		shape.SetFriction(0.5)
+		cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 10)
 	}
+
+	space.StaticBody.EachShape(func(s *cm.Shape) {
+		s.SetElasticity(0.5)
+		s.SetFriction(0.5)
+	})
 
 	game.circ = addBall(space, screenWidth*0.5, screenHeight*0.5, 50)
 
@@ -72,10 +75,11 @@ func main() {
 
 func addBall(space *cm.Space, x, y, radius float64) *cm.Shape {
 	mass := radius * radius / 500.0
-	body := space.AddBody(cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{})))
-	body.SetPosition(vec.Vec2{X: x, Y: y})
-	shape := space.AddShape(cm.NewCircle(body, radius, vec.Vec2{}))
-	shape.SetElasticity(0.5)
-	shape.SetFriction(0.5)
-	return shape
+	b := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{}))
+	cm.NewCircleShapeWithBody(b, radius, vec.Vec2{})
+	b.Shapes[0].SetElasticity(0.5)
+	b.Shapes[0].SetFriction(0.5)
+	b.SetPosition(vec.Vec2{x, y})
+	space.AddBodyWithShapes(b)
+	return b.Shapes[0]
 }

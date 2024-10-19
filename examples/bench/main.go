@@ -44,9 +44,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return int(screenSize.X), int(screenSize.Y)
 }
 
-var (
-	ball *cm.Body
-)
+// var (
+// 	ball *cm.Body
+// )
 
 func main() {
 	// Initialising Chipmunk
@@ -77,12 +77,13 @@ func main() {
 
 func addBall(space *cm.Space, x, y, radius float64) {
 	mass := 1.
-	body := space.AddBody(cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{})))
-	ball = body
+	moi := cm.MomentForCircle(mass, 0, radius, vec.Vec2{})
+	body := cm.NewBody(mass, moi)
+	cm.NewCircleShapeWithBody(body, radius, vec.Vec2{})
+	body.Shapes[0].SetElasticity(0.91)
+	body.Shapes[0].SetFriction(0.9)
+	space.AddBodyWithShapes(body)
 	body.SetPosition(vec.Vec2{x, y})
-	shape := space.AddShape(cm.NewCircle(body, radius, vec.Vec2{}))
-	shape.SetElasticity(0.91)
-	shape.SetFriction(0.9)
 	body.ApplyImpulseAtLocalPoint(vec.Vec2{0, 200}, vec.Vec2{})
 }
 
@@ -104,11 +105,14 @@ func simpleTerrain(space *cm.Space) *cm.Space {
 	for i := 0; i < len(simpleTerrainVerts)-1; i++ {
 		a := simpleTerrainVerts[i]
 		b := simpleTerrainVerts[i+1]
-		s := cm.NewSegment(space.StaticBody, a.Add(offset), b.Add(offset), 3)
-		s.SetElasticity(0.91)
-		s.SetFriction(0.9)
-		space.AddShape(s)
+		// s := cm.NewSegment(space.StaticBody, a.Add(offset), b.Add(offset), 3)
+		cm.NewSegmentShapeWithBody(space.StaticBody, a.Add(offset), b.Add(offset), 3)
 	}
 
+	space.StaticBody.EachShape(func(s *cm.Shape) {
+		s.SetElasticity(0.91)
+		s.SetFriction(0.9)
+	})
+	space.AddBodyWithShapes(space.StaticBody)
 	return space
 }

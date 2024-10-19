@@ -98,14 +98,18 @@ func main() {
 	chassisMass := 2.0
 	a := vec.Vec2{-offset, 0}
 	b := vec.Vec2{offset, 0}
-	chassis := space.AddBody(cm.NewBody(chassisMass, cm.MomentForSegment(chassisMass, a, b, 0)))
-	shape := space.AddShape(cm.NewSegment(chassis, a, b, segRadius))
+
+	chassis := cm.NewBody(chassisMass, cm.MomentForSegment(chassisMass, a, b, 0))
+	space.AddBody(chassis)
+	shape := cm.NewSegmentShapeWithBody(chassis, a, b, segRadius)
+	space.AddShape(shape)
 	shape.SetShapeFilter(cm.NewShapeFilter(1, cm.AllCategories, cm.AllCategories))
 
 	crankMass := 1.0
 	crankRadius := 13.0
-	crank := space.AddBody(cm.NewBody(crankMass, cm.MomentForCircle(crankMass, crankRadius, 0, vec.Vec2{})))
-	shape = space.AddShape(cm.NewCircle(crank, crankRadius, vec.Vec2{}))
+	crank := cm.NewBody(crankMass, cm.MomentForCircle(crankMass, crankRadius, 0, vec.Vec2{}))
+	space.AddBody(crank)
+	shape = space.AddShape(cm.NewCircleShapeWithBody(crank, crankRadius, vec.Vec2{}))
 	shape.SetShapeFilter(cm.NewShapeFilter(1, cm.AllCategories, cm.AllCategories))
 	space.AddConstraint(cm.NewPivotJoint2(chassis, crank, vec.Vec2{}, vec.Vec2{}))
 	side := 30.0
@@ -127,7 +131,8 @@ func main() {
 		{-screen.X, screen.Y}, {screen.X * 2, screen.Y},
 	}
 	for i := 0; i < len(walls)-1; i += 2 {
-		shape := space.AddShape(cm.NewSegment(space.StaticBody, walls[i], walls[i+1], 0))
+		shape := cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 0)
+		space.AddShape(shape)
 		shape.SetElasticity(0.9)
 		shape.SetFriction(0.9)
 	}
@@ -147,10 +152,12 @@ func makeLeg(space *cm.Space, side, offset float64, chassis, crank *cm.Body, anc
 	// make a leg
 	a = vec.Vec2{}
 	b = vec.Vec2{0, -side}
-	upperLeg := space.AddBody(cm.NewBody(legMass, cm.MomentForSegment(legMass, a, b, 0)))
+
+	upperLeg := cm.NewBody(legMass, cm.MomentForSegment(legMass, a, b, 0))
+	space.AddBody(upperLeg)
 	upperLeg.SetPosition(vec.Vec2{offset, 0})
 
-	shape = space.AddShape(cm.NewSegment(upperLeg, a, b, segRadius))
+	shape = space.AddShape(cm.NewSegmentShapeWithBody(upperLeg, a, b, segRadius))
 	shape.SetShapeFilter(cm.NewShapeFilter(1, cm.AllCategories, cm.AllCategories))
 
 	space.AddConstraint(cm.NewPivotJoint2(chassis, upperLeg, vec.Vec2{offset, 0}, vec.Vec2{}))
@@ -159,13 +166,15 @@ func makeLeg(space *cm.Space, side, offset float64, chassis, crank *cm.Body, anc
 	a = vec.Vec2{}
 	b = vec.Vec2{0, -1 * side}
 	b = b.NegY()
-	lowerLeg := space.AddBody(cm.NewBody(legMass, cm.MomentForSegment(legMass, a, b, 0)))
+	lowerLeg := cm.NewBody(legMass, cm.MomentForSegment(legMass, a, b, 0))
+	space.AddBody(lowerLeg)
 	lowerLeg.SetPosition(vec.Vec2{offset, side})
 
-	shape = space.AddShape(cm.NewSegment(lowerLeg, a, b, segRadius))
+	shape = cm.NewSegmentShapeWithBody(lowerLeg, a, b, segRadius)
+	space.AddShape(shape)
 	shape.SetShapeFilter(cm.NewShapeFilter(1, cm.AllCategories, cm.AllCategories))
 
-	shape = space.AddShape(cm.NewCircle(lowerLeg, segRadius*2.0, b))
+	shape = space.AddShape(cm.NewCircleShapeWithBody(lowerLeg, segRadius*2.0, b))
 	shape.SetShapeFilter(cm.NewShapeFilter(1, cm.AllCategories, cm.AllCategories))
 	shape.SetElasticity(0)
 	shape.SetFriction(1)

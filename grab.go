@@ -78,7 +78,7 @@ func (h *mouseEventHandler) onMouseDown(space *cm.Space, cursorPosition vec.Vec2
 
 	info := space.PointQueryNearest(cursorPosition, radius, GrabFilter)
 
-	if info.Shape != nil && info.Shape.Body().Mass() < cm.Infinity {
+	if info.Shape != nil && info.Shape.Body.Mass() < math.MaxFloat64 {
 		var nearest vec.Vec2
 		if info.Distance > 0 {
 			nearest = info.Point
@@ -86,7 +86,7 @@ func (h *mouseEventHandler) onMouseDown(space *cm.Space, cursorPosition vec.Vec2
 			nearest = cursorPosition
 		}
 
-		body := info.Shape.Body()
+		body := info.Shape.Body
 		h.mouseJoint = cm.NewPivotJoint2(h.mouseBody, body, vec.Vec2{}, body.WorldToLocal(nearest))
 		h.mouseJoint.SetMaxForce(50000)
 		h.mouseJoint.SetErrorBias(math.Pow(1.0-0.15, 60.0))

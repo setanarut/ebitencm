@@ -91,13 +91,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 func addBall(space *cm.Space, pos vec.Vec2, radius float64) *cm.Body {
 	mass := radius / space.Gravity.Y
-	body := space.AddBody(cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{})))
-	body.SetPosition(pos)
-	shape := space.AddShape(cm.NewCircle(body, radius, vec.Vec2{}))
-	shape.SetElasticity(elasticity)
-	shape.SetFriction(friction)
-
-	return body
+	b := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{}))
+	cm.NewCircleShapeWithBody(b, radius, vec.Vec2{})
+	b.Shapes[0].SetElasticity(elasticity)
+	b.Shapes[0].SetFriction(friction)
+	space.AddBodyWithShapes(b)
+	b.SetPosition(pos)
+	return b
 }
 
 func main() {
@@ -113,11 +113,16 @@ func main() {
 		{Screen.X, Screen.Y}, {0, Screen.Y},
 		{0, Screen.Y}, {0, 0},
 	}
+	// sbwall := cm.NewStaticBody()
 	for i := 0; i < len(walls)-1; i += 2 {
-		shape := space.AddShape(cm.NewSegment(space.StaticBody, walls[i], walls[i+1], 10))
-		shape.SetElasticity(elasticity)
-		shape.SetFriction(friction)
+		cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 10)
+
 	}
+	space.StaticBody.EachShape(func(s *cm.Shape) {
+		s.SetElasticity(elasticity)
+		s.SetFriction(friction)
+	})
+	space.AddBodyWithShapes(space.StaticBody)
 
 	ballPos := Screen.Scale(0.5)
 	game := &Game{
