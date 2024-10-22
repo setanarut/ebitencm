@@ -14,6 +14,11 @@
 go run github.com/setanarut/ebitencm/examples/theojansen_cam@latest
 ```
 
+## player
+
+```
+go run github.com/setanarut/ebitencm/examples/player@latest
+```
 ## balls_cam
 
 ```

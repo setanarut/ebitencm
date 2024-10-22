@@ -52,13 +52,11 @@ func main() {
 		{0, screenHeight}, {0, 0},
 	}
 	for i := 0; i < len(walls)-1; i += 2 {
-		cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 10)
-	}
-
-	space.StaticBody.EachShape(func(s *cm.Shape) {
+		s := cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 10)
 		s.SetElasticity(0.5)
 		s.SetFriction(0.5)
-	})
+	}
+	space.AddBodyWithShapes(space.StaticBody)
 
 	game.circ = addBall(space, screenWidth*0.5, screenHeight*0.5, 50)
 

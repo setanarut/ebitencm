@@ -54,14 +54,14 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyQ) {
-		r := cam.Rotation()
+		r := cam.Angle()
 		r += 0.1
-		cam.SetRotation(r)
+		cam.SetAngle(r)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyE) {
-		r := cam.Rotation()
+		r := cam.Angle()
 		r -= 0.1
-		cam.SetRotation(r)
+		cam.SetAngle(r)
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyD) {

@@ -49,14 +49,14 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyQ) {
-		r := g.cam.Rotation()
+		r := g.cam.Angle()
 		r += 0.1
-		g.cam.SetRotation(r)
+		g.cam.SetAngle(r)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyE) {
-		r := g.cam.Rotation()
+		r := g.cam.Angle()
 		r -= 0.1
-		g.cam.SetRotation(r)
+		g.cam.SetAngle(r)
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
@@ -115,13 +115,10 @@ func main() {
 	}
 	// sbwall := cm.NewStaticBody()
 	for i := 0; i < len(walls)-1; i += 2 {
-		cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 10)
-
-	}
-	space.StaticBody.EachShape(func(s *cm.Shape) {
+		s := cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 10)
 		s.SetElasticity(elasticity)
 		s.SetFriction(friction)
-	})
+	}
 	space.AddBodyWithShapes(space.StaticBody)
 
 	ballPos := Screen.Scale(0.5)
