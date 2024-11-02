@@ -52,7 +52,7 @@ func main() {
 		{0, screenHeight}, {0, 0},
 	}
 	for i := 0; i < len(walls)-1; i += 2 {
-		s := cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 10)
+		s := cm.NewSegmentShape(space.StaticBody, walls[i], walls[i+1], 10)
 		s.SetElasticity(0.5)
 		s.SetFriction(0.5)
 	}
@@ -74,7 +74,7 @@ func main() {
 func addBall(space *cm.Space, x, y, radius float64) *cm.Shape {
 	mass := radius * radius / 500.0
 	b := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{}))
-	cm.NewCircleShapeWithBody(b, radius, vec.Vec2{})
+	cm.NewCircleShape(b, radius, vec.Vec2{})
 	b.Shapes[0].SetElasticity(0.5)
 	b.Shapes[0].SetFriction(0.5)
 	b.SetPosition(vec.Vec2{x, y})

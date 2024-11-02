@@ -99,14 +99,14 @@ func main() {
 		{0, Screen.Y}, {0, 0},
 	}
 	for i := 0; i < len(walls)-1; i += 2 {
-		s := cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 40)
+		s := cm.NewSegmentShape(space.StaticBody, walls[i], walls[i+1], 40)
 		s.SetElasticity(0.5)
 		s.SetFriction(0.5)
 	}
 	space.AddBodyWithShapes(space.StaticBody)
 
 	playerBody = cm.NewBody(0.0001, math.MaxFloat64)
-	playerShape = cm.NewBoxShapeWithBody2(playerBody, cm.BB{-6, -8, 6, 8}, 0)
+	playerShape = cm.NewBoxShape2(playerBody, cm.BB{-6, -8, 6, 8}, 0)
 	playerBody.SetPosition(vec.Vec2{100, 200})
 	playerBody.SetVelocityUpdateFunc(VelFunc)
 	playerShape.SetElasticity(0)

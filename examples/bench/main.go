@@ -79,7 +79,7 @@ func addBall(space *cm.Space, x, y, radius float64) {
 	mass := 1.
 	moi := cm.MomentForCircle(mass, 0, radius, vec.Vec2{})
 	body := cm.NewBody(mass, moi)
-	cm.NewCircleShapeWithBody(body, radius, vec.Vec2{})
+	cm.NewCircleShape(body, radius, vec.Vec2{})
 	body.Shapes[0].SetElasticity(0.91)
 	body.Shapes[0].SetFriction(0.9)
 	space.AddBodyWithShapes(body)
@@ -106,7 +106,7 @@ func simpleTerrain(space *cm.Space) *cm.Space {
 		a := simpleTerrainVerts[i]
 		b := simpleTerrainVerts[i+1]
 		// s := cm.NewSegment(space.StaticBody, a.Add(offset), b.Add(offset), 3)
-		cm.NewSegmentShapeWithBody(space.StaticBody, a.Add(offset), b.Add(offset), 3)
+		cm.NewSegmentShape(space.StaticBody, a.Add(offset), b.Add(offset), 3)
 	}
 
 	space.StaticBody.EachShape(func(s *cm.Shape) {

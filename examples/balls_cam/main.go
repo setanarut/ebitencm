@@ -92,7 +92,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func addBall(space *cm.Space, pos vec.Vec2, radius float64) *cm.Body {
 	mass := radius / space.Gravity.Y
 	b := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{}))
-	cm.NewCircleShapeWithBody(b, radius, vec.Vec2{})
+	cm.NewCircleShape(b, radius, vec.Vec2{})
 	b.Shapes[0].SetElasticity(elasticity)
 	b.Shapes[0].SetFriction(friction)
 	space.AddBodyWithShapes(b)
@@ -115,7 +115,7 @@ func main() {
 	}
 	// sbwall := cm.NewStaticBody()
 	for i := 0; i < len(walls)-1; i += 2 {
-		s := cm.NewSegmentShapeWithBody(space.StaticBody, walls[i], walls[i+1], 10)
+		s := cm.NewSegmentShape(space.StaticBody, walls[i], walls[i+1], 10)
 		s.SetElasticity(elasticity)
 		s.SetFriction(friction)
 	}

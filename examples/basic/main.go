@@ -62,7 +62,7 @@ func main() {
 
 func addWall(space *cm.Space, pos1 vec.Vec2, pos2 vec.Vec2, radius float64) {
 	sb := cm.NewStaticBody()
-	cm.NewSegmentShapeWithBody(sb, pos1, pos2, radius)
+	cm.NewSegmentShape(sb, pos1, pos2, radius)
 	shape := sb.Shapes[0]
 	shape.SetElasticity(0.5)
 	shape.SetFriction(0.5)
@@ -71,7 +71,7 @@ func addWall(space *cm.Space, pos1 vec.Vec2, pos2 vec.Vec2, radius float64) {
 func addBall(space *cm.Space, pos vec.Vec2, radius float64) *cm.Body {
 	mass := radius * radius / 100.0
 	body := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{}))
-	cm.NewCircleShapeWithBody(body, radius, vec.Vec2{})
+	cm.NewCircleShape(body, radius, vec.Vec2{})
 	body.Shapes[0].SetElasticity(0.5)
 	body.Shapes[0].SetFriction(0.5)
 	body.SetPosition(pos)
