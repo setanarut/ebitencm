@@ -1,7 +1,6 @@
 package ebitencm
 
 import (
-	"fmt"
 	"image/color"
 	"math"
 
@@ -164,8 +163,6 @@ func (d *Drawer) drawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 	insetScaleFactor := -1.
 	outsetScaleFactor := 1.
 	outset2ScaleFactor := 1.
-
-	fmt.Println(insetScaleFactor, outsetScaleFactor, outset2ScaleFactor)
 
 	j := count - 1
 	for i := 0; i < count; {

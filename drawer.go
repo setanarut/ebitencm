@@ -18,8 +18,8 @@ var springVerts = []vec.Vec2{
 	{0.40, -6.0}, {0.45, 6.0}, {0.50, -6.0}, {0.55, 6.0}, {0.6, -6.0},
 	{0.65, 6.0}, {0.70, -3.0}, {0.75, 6.0}, {0.80, 0.0}, {1.0, 0.0}}
 
-// DrawShape draws shapes with the drawer implementation
-func (drw *Drawer) DrawShape(shape *cm.Shape, outline, fill cm.FColor, strokeWidth float32) {
+// drawShape draws shapes with the drawer implementation
+func (drw *Drawer) drawShape(shape *cm.Shape, outline, fill cm.FColor, strokeWidth float32) {
 	body := shape.Body
 
 	switch shape.Class.(type) {
@@ -45,8 +45,8 @@ func (drw *Drawer) DrawShape(shape *cm.Shape, outline, fill cm.FColor, strokeWid
 	}
 }
 
-// DrawConstraint draws constraints with the drawer implementation
-func (drw *Drawer) DrawConstraint(constraint *cm.Constraint, strokeWidth float32) {
+// drawConstraint draws constraints with the drawer implementation
+func (drw *Drawer) drawConstraint(constraint *cm.Constraint, strokeWidth float32) {
 
 	bodyA := constraint.BodyA()
 	bodyB := constraint.BodyB()
@@ -129,7 +129,7 @@ func (drw *Drawer) DrawSpace(space *cm.Space, screen *ebiten.Image) {
 
 	if !drw.DrawingOptions.StaticBodyDisabled {
 		space.EachStaticShape(func(shape *cm.Shape) {
-			drw.DrawShape(shape, drw.Theme.StaticBodyStroke, drw.Theme.StaticBodyFill, drw.DrawingOptions.StaticBodyStrokeWidth)
+			drw.drawShape(shape, drw.Theme.StaticBodyStroke, drw.Theme.StaticBodyFill, drw.DrawingOptions.StaticBodyStrokeWidth)
 		})
 	}
 
@@ -146,13 +146,13 @@ func (drw *Drawer) DrawSpace(space *cm.Space, screen *ebiten.Image) {
 				clr = drw.Theme.DynamicBodyFill
 			}
 
-			drw.DrawShape(shape, drw.Theme.DynamicBodyStroke, clr, drw.DrawingOptions.DynamicBodyStrokeWidth)
+			drw.drawShape(shape, drw.Theme.DynamicBodyStroke, clr, drw.DrawingOptions.DynamicBodyStrokeWidth)
 		})
 	}
 
 	if !drw.DrawingOptions.ConstraintDisabled {
 		space.EachConstraint(func(c *cm.Constraint) {
-			drw.DrawConstraint(c, drw.DrawingOptions.ConstraintsStrokeWidth)
+			drw.drawConstraint(c, drw.DrawingOptions.ConstraintsStrokeWidth)
 		})
 
 	}
