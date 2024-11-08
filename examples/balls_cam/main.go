@@ -81,7 +81,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	// Drawing with Ebitengine/v2
-	cm.DrawSpace(g.space, g.drawer.WithScreen(screen))
+	g.drawer.DrawSpace(g.space, screen)
 
 }
 
@@ -134,7 +134,7 @@ func main() {
 	}
 
 	// Initialising Ebitengine/v2
-	game.cam.Lerp = true
+	game.cam.LerpEnabled = true
 	game.space = space
 
 	// Init drawer

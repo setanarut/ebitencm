@@ -32,7 +32,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	// Drawing with Ebitengine/v2
-	cm.DrawSpace(g.space, g.drawer.WithScreen(screen))
+	g.drawer.DrawSpace(g.space, screen)
 
 	ebitenutil.DebugPrint(screen, fmt.Sprintf(
 		"FPS: %0.2f",

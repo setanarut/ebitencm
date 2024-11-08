@@ -70,7 +70,7 @@ type Game struct {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	// Drawing with Ebitengine/v2
-	cm.DrawSpace(g.space, g.drawer.WithScreen(screen))
+	g.drawer.DrawSpace(g.space, screen)
 }
 
 func (g *Game) Update() error {
@@ -90,6 +90,9 @@ func main() {
 	space := cm.NewSpace()
 	space.SleepTimeThreshold = 0.5
 	space.SetGravity(vec.Vec2{X: 0, Y: 10})
+	space.Iterations = 40
+	space.CollisionBias = math.Pow(0.001, 60)
+	space.CollisionSlop = 0.00001
 
 	// walls
 	walls := []vec.Vec2{
@@ -118,7 +121,10 @@ func main() {
 	game.space = space
 	game.drawer = ebitencm.NewDrawer()
 
-	game.drawer.OptStroke.AntiAlias = true
+	game.drawer.StrokeDisabled = false
+	game.drawer.FillDisabled = true
+
+	game.drawer.OptStroke.AntiAlias = false
 	game.drawer.OptFill.AntiAlias = true
 
 	ebiten.SetWindowSize(int(Screen.X), int(Screen.Y))

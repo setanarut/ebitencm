@@ -81,7 +81,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	cm.DrawSpace(space, drawer.WithScreen(screen))
+	drawer.DrawSpace(space, screen)
 
 }
 
@@ -92,7 +92,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	space.Iterations = 20
 	space.SetGravity(vec.Vec2{0, 400})
-	cam.Lerp = true
+	cam.LerpEnabled = true
+	drawer.FillDisabled = false
+	drawer.StrokeDisabled = true
 
 	offset := 30.0
 	chassisMass := 2.0
