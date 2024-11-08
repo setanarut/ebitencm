@@ -12,10 +12,9 @@ import (
 )
 
 var Screen = vec.Vec2{640, 480}
-
+var drawer *ebitencm.Drawer = ebitencm.NewDrawer()
 var (
-	space  *cm.Space
-	drawer *ebitencm.Drawer
+	space *cm.Space
 )
 
 type Game struct{}
@@ -38,7 +37,6 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 func main() {
 
-	drawer = ebitencm.NewDrawer()
 	// Initialising Chipmunk
 	space = cm.NewSpace()
 	space.SetGravity(vec.Vec2{0, 100})

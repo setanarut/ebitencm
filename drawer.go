@@ -18,22 +18,17 @@ var springVerts = []vec.Vec2{
 	{0.40, -6.0}, {0.45, 6.0}, {0.50, -6.0}, {0.55, 6.0}, {0.6, -6.0},
 	{0.65, 6.0}, {0.70, -3.0}, {0.75, 6.0}, {0.80, 0.0}, {1.0, 0.0}}
 
-// 16 bytes
-type FColor struct {
-	R, G, B, A float32
-}
-
 // DrawShape draws shapes with the drawer implementation
-func (drw *Drawer) DrawShape(shape *cm.Shape, outline, fill cm.FColor) {
+func (drw *Drawer) DrawShape(shape *cm.Shape, outline, fill cm.FColor, strokeWidth float32) {
 	body := shape.Body
 
 	switch shape.Class.(type) {
 	case *cm.Circle:
 		circle := shape.Class.(*cm.Circle)
-		drw.drawCircle(circle.TransformC(), body.Angle(), circle.Radius(), drw.Theme.Outline, fill)
+		drw.drawCircle(circle.TransformC(), body.Angle(), circle.Radius(), outline, fill, strokeWidth)
 	case *cm.Segment:
 		seg := shape.Class.(*cm.Segment)
-		drw.drawFatSegment(seg.TransformA(), seg.TransformB(), seg.Radius(), drw.Theme.Outline, fill)
+		drw.drawFatSegment(seg.TransformA(), seg.TransformB(), seg.Radius(), outline, fill, strokeWidth)
 	case *cm.PolyShape:
 		poly := shape.Class.(*cm.PolyShape)
 
@@ -44,14 +39,14 @@ func (drw *Drawer) DrawShape(shape *cm.Shape, outline, fill cm.FColor) {
 		for i := 0; i < count; i++ {
 			verts[i] = planes[i].V0
 		}
-		drw.drawPolygon(count, verts, poly.Radius, drw.Theme.Outline, fill)
+		drw.drawPolygon(count, verts, poly.Radius, outline, fill, strokeWidth)
 	default:
 		panic("Unknown shape type")
 	}
 }
 
 // DrawConstraint draws constraints with the drawer implementation
-func (drw *Drawer) DrawConstraint(constraint *cm.Constraint) {
+func (drw *Drawer) DrawConstraint(constraint *cm.Constraint, strokeWidth float32) {
 
 	bodyA := constraint.BodyA()
 	bodyB := constraint.BodyB()
@@ -63,26 +58,26 @@ func (drw *Drawer) DrawConstraint(constraint *cm.Constraint) {
 		joint := constraint.Class.(*cm.PinJoint)
 		a := bodyA.Transform().Apply(joint.AnchorA)
 		b := bodyB.Transform().Apply(joint.AnchorB)
-		drw.drawDot(5, a, drw.Theme.ConstraintPinJointDot)
-		drw.drawDot(5, b, drw.Theme.ConstraintPinJointDot)
-		drw.drawSegment(a, b, drw.Theme.ConstraintPinJointSegment)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, a, drw.Theme.ConstraintPinJointDot)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, b, drw.Theme.ConstraintPinJointDot)
+		drw.drawSegment(a, b, drw.Theme.ConstraintPinJointSegment, strokeWidth)
 
 	case *cm.SlideJoint:
 
 		joint := constraint.Class.(*cm.SlideJoint)
 		a := bodyA.Transform().Apply(joint.AnchorA)
 		b := bodyB.Transform().Apply(joint.AnchorB)
-		drw.drawDot(5, a, drw.Theme.ConstraintSlideJointDot)
-		drw.drawDot(5, b, drw.Theme.ConstraintSlideJointDot)
-		drw.drawSegment(a, b, drw.Theme.ConstraintSlideJointSegment)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, a, drw.Theme.ConstraintSlideJointDot)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, b, drw.Theme.ConstraintSlideJointDot)
+		drw.drawSegment(a, b, drw.Theme.ConstraintSlideJointSegment, strokeWidth)
 
 	case *cm.PivotJoint:
 
 		joint := constraint.Class.(*cm.PivotJoint)
 		a := bodyA.Transform().Apply(joint.AnchorA)
 		b := bodyB.Transform().Apply(joint.AnchorB)
-		drw.drawDot(5, a, drw.Theme.ConstraintPinJointDot)
-		drw.drawDot(5, b, drw.Theme.ConstraintPinJointDot)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, a, drw.Theme.ConstraintPinJointDot)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, b, drw.Theme.ConstraintPinJointDot)
 
 	case *cm.GrooveJoint:
 
@@ -90,16 +85,16 @@ func (drw *Drawer) DrawConstraint(constraint *cm.Constraint) {
 		a := bodyA.Transform().Apply(joint.GrooveA)
 		b := bodyA.Transform().Apply(joint.GrooveB)
 		c := bodyB.Transform().Apply(joint.AnchorB)
-		drw.drawDot(5, c, drw.Theme.ConstraintGrooveJointDot)
-		drw.drawSegment(a, b, drw.Theme.ConstraintGrooveJointSegment)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, c, drw.Theme.ConstraintGrooveJointDot)
+		drw.drawSegment(a, b, drw.Theme.ConstraintGrooveJointSegment, strokeWidth)
 
 	case *cm.DampedSpring:
 
 		spring := constraint.Class.(*cm.DampedSpring)
 		a := bodyA.Transform().Apply(spring.AnchorA)
 		b := bodyB.Transform().Apply(spring.AnchorB)
-		drw.drawDot(5, a, drw.Theme.ConstraintDampedSpringDot)
-		drw.drawDot(5, b, drw.Theme.ConstraintDampedSpringDot)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, a, drw.Theme.ConstraintDampedSpringDot)
+		drw.drawDot(drw.DrawingOptions.ConstraintsDotRadius, b, drw.Theme.ConstraintDampedSpringDot)
 		delta := b.Sub(a)
 		cos := delta.X
 		sin := delta.Y
@@ -112,7 +107,7 @@ func (drw *Drawer) DrawConstraint(constraint *cm.Constraint) {
 			verts = append(verts, vec.Vec2{v.Dot(r1) + a.X, v.Dot(r2) + a.Y})
 		}
 		for i := 0; i < len(springVerts)-1; i++ {
-			drw.drawSegment(verts[i], verts[i+1], drw.Theme.ConstraintDampedSpringSegment)
+			drw.drawSegment(verts[i], verts[i+1], drw.Theme.ConstraintDampedSpringSegment, strokeWidth)
 		}
 
 	// these aren't drawn in Chipmunk, so they aren't drawn here
@@ -132,48 +127,50 @@ func (drw *Drawer) DrawConstraint(constraint *cm.Constraint) {
 func (drw *Drawer) DrawSpace(space *cm.Space, screen *ebiten.Image) {
 	drw.Screen = screen
 
-	if !drw.StaticDrawingDisabled {
+	if !drw.DrawingOptions.StaticBodyDisabled {
 		space.EachStaticShape(func(shape *cm.Shape) {
-			drw.DrawShape(shape, drw.Theme.Outline, drw.Theme.ShapeSleepingFill)
+			drw.DrawShape(shape, drw.Theme.StaticBodyStroke, drw.Theme.StaticBodyFill, drw.DrawingOptions.StaticBodyStrokeWidth)
 		})
 	}
 
-	if !drw.DynamicDrawingDisabled {
+	if !drw.DrawingOptions.DynamicBodyDisabled {
 		space.EachDynamicShape(func(shape *cm.Shape) {
 
 			var clr cm.FColor
 
 			if shape.Body.IsSleeping() {
-				clr = drw.Theme.ShapeSleepingFill
+				clr = drw.Theme.DynamicBodySleepingFill
 			} else if shape.Body.IdleTime() > shape.Space.SleepTimeThreshold {
-				clr = drw.Theme.ShapeIdleFill
+				clr = drw.Theme.DynamicBodyIdleFill
 			} else {
-				clr = drw.Theme.ShapeFill
+				clr = drw.Theme.DynamicBodyFill
 			}
 
-			drw.DrawShape(shape, drw.Theme.Outline, clr)
+			drw.DrawShape(shape, drw.Theme.DynamicBodyStroke, clr, drw.DrawingOptions.DynamicBodyStrokeWidth)
 		})
 	}
 
-	if !drw.ConstraintDrawingDisabled {
+	if !drw.DrawingOptions.ConstraintDisabled {
 		space.EachConstraint(func(c *cm.Constraint) {
-			drw.DrawConstraint(c)
+			drw.DrawConstraint(c, drw.DrawingOptions.ConstraintsStrokeWidth)
 		})
 
 	}
 	// Draw Collision Point
-	if !drw.CollisionPointDrawingDisabled {
+	if !drw.DrawingOptions.CollisionNormalDisabled {
 		for _, arb := range space.Arbiters {
+
 			bodyA, bodyB := arb.Bodies()
-			arb.ContactPointSet()
+
 			n := arb.Normal()
 			for j := 0; j < arb.Count(); j++ {
 				p1 := bodyA.Position().Add(arb.Contacts[j].R1)
 				p2 := bodyB.Position().Add(arb.Contacts[j].R2)
-				a := p1.Add(n.Scale(-2))
-				b := p2.Add(n.Scale(2))
-				drw.drawSegment(a, b, drw.Theme.CollisionPoint)
+				a := p1.Add(n.Scale(-drw.DrawingOptions.CollisionNormalLength / 2))
+				b := p2.Add(n.Scale(drw.DrawingOptions.CollisionNormalLength / 2))
+				drw.drawSegment(a, b, drw.Theme.CollisionNormal, drw.DrawingOptions.CollisionNormalStrokeWidth)
 			}
 		}
+
 	}
 }

@@ -139,8 +139,8 @@ func main() {
 
 	// Init drawer
 	game.drawer = ebitencm.NewDrawer()
-	game.drawer.OptStroke.AntiAlias = true
-	game.drawer.OptFill.AntiAlias = true
+	game.drawer.DrawTriangleStrokeOpt.AntiAlias = true
+	game.drawer.DrawTriagleFillOpt.AntiAlias = true
 	// game.drawer.FillDisabled = true
 	// game.drawer.StrokeDisabled = true
 

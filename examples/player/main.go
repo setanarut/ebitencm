@@ -121,11 +121,11 @@ func main() {
 	game.space = space
 	game.drawer = ebitencm.NewDrawer()
 
-	game.drawer.StrokeDisabled = false
-	game.drawer.FillDisabled = true
+	// game.drawer.DrawingOptions.AllStrokesDisabled = true
+	// game.drawer.DrawingOptions.AllFillsDisabled = false
 
-	game.drawer.OptStroke.AntiAlias = false
-	game.drawer.OptFill.AntiAlias = true
+	// game.drawer.DrawTriangleStrokeOpt.AntiAlias = false
+	// game.drawer.DrawTriagleFillOpt.AntiAlias = true
 
 	ebiten.SetWindowSize(int(Screen.X), int(Screen.Y))
 	ebiten.SetWindowTitle("ebiten-chipmunk - ball")

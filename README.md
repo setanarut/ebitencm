@@ -1,26 +1,28 @@
+[![GoDoc](https://godoc.org/github.com/setanarut/ebitencm?status.svg)](https://pkg.go.dev/github.com/setanarut/ebitencm)
+
 # ebitencm
 
-**ebitencm** (Ebitengine Chipmunk drawer) is an implementation of the `cm.IDrawer` Interface from [setanarut/cm](https://github.com/setanarut/cm). This implementation utilizes [hajimehoshi/ebiten/v2](https://github.com/hajimehoshi/ebiten), making it possible to run across multiple platforms. Coordinate system is top-left by default, same as Ebitengine
+**ebitencm** is *Drawer* for [setanarut/cm](https://github.com/setanarut/cm) Chipmunk physics space.
 
-![scr](https://github.com/user-attachments/assets/ca27ad36-509e-4f33-b526-372598d3144c)
+# Features
+
+- Color theme customization for *Fill* and *Stroke* colors.
+- Detailed drawing options.
+- `drawer.GeoM{}` structure is provided for screen transformation. (Cameras)
 
 ## Usage
 
-Within your `Draw()` method, invoke the `cm.DrawSpace()` function, passing in both a `*cm.Space` and a `*ebitencm.Drawer` as parameters.
+First create a drawer
+
+```Go
+var drawer *ebitencm.Drawer = ebitencm.NewDrawer()
+```
+
+Then
 
 ```go
-type Game struct {
-	space  *cm.Space
-	drawer *ebitencm.Drawer
-}
-func main() {
-	game := &Game{}
-	game.space = space
-	game.drawer = ebitencm.NewDrawer()
-}
 func (g *Game) Draw(screen *ebiten.Image) {
-	// Drawing with Ebitengine/v2
-	cm.DrawSpace(g.space, g.drawer.WithScreen(screen))
+	drawer.DrawSpace(space, screen)
 }
 ```
 
@@ -30,16 +32,12 @@ If you want to enable dragging, call the `HandleMouseEvent()` function within th
 
 ```go
 func (g *Game) Update() error {
-	// Handling dragging
-	g.drawer.HandleMouseEvent(g.space)
-	g.space.Step(1 / 60.0)
-	return nil
-}
+	drawer.HandleMouseEvent(space)
 ```
 
 ## Camera transform
 
-Use `Drawer.GeoM{}` for vertices transform. The cursor position is calculated according to this matrix.
+Use `Drawer.GeoM{}` for all vertices transform. The cursor position is calculated according to this matrix.
 
 ```Go
 // move the all space objects 100 pixels to the left (move camera to right)
