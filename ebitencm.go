@@ -12,20 +12,23 @@ import (
 
 const drawPointLineScale = 1.0
 
-// const flipFactor = -1.0
-
 type Drawer struct {
 	// Ebitengine screen
 	Screen      *ebiten.Image
 	StrokeWidth float32
 	// Drawing colors
-	Theme *Theme
+	Theme                *Theme
+	CursorClickDotRadius float64
+	ConstraintsDotRadius float64
 	// GeoM for drawing vertices. Useful for cameras
 	GeoM *ebiten.GeoM
 	// Disable filling except DrawDot().
-	FillDisabled bool
-	// Disable strokes
-	StrokeDisabled bool
+	FillDisabled                  bool
+	StrokeDisabled                bool
+	StaticDrawingDisabled         bool
+	DynamicDrawingDisabled        bool
+	ConstraintDrawingDisabled     bool
+	CollisionPointDrawingDisabled bool
 
 	OptStroke *ebiten.DrawTrianglesOptions
 	OptFill   *ebiten.DrawTrianglesOptions
@@ -39,9 +42,11 @@ func NewDrawer() *Drawer {
 	whiteImage := ebiten.NewImage(3, 3)
 	whiteImage.Fill(color.White)
 	return &Drawer{
-		StrokeWidth: 1,
-		OptStroke:   &ebiten.DrawTrianglesOptions{AntiAlias: true},
-		OptFill:     &ebiten.DrawTrianglesOptions{AntiAlias: true},
+		StrokeWidth:          1,
+		CursorClickDotRadius: 1.5,
+		ConstraintsDotRadius: 1.5,
+		OptStroke:            &ebiten.DrawTrianglesOptions{AntiAlias: true},
+		OptFill:              &ebiten.DrawTrianglesOptions{AntiAlias: true},
 
 		whiteImage: whiteImage,
 		GeoM:       &ebiten.GeoM{},
@@ -59,7 +64,7 @@ func (d *Drawer) SetFillAntialias(antialias bool) {
 	d.OptFill.AntiAlias = antialias
 }
 
-func (d *Drawer) DrawCircle(
+func (d *Drawer) drawCircle(
 	pos vec.Vec2,
 	angle, radius float64,
 	outline, fill cm.FColor,
@@ -93,7 +98,7 @@ func (d *Drawer) DrawCircle(
 	}
 }
 
-func (d *Drawer) DrawSegment(a, b vec.Vec2, clr cm.FColor) {
+func (d *Drawer) drawSegment(a, b vec.Vec2, clr cm.FColor) {
 
 	var path vector.Path = vector.Path{}
 	path.MoveTo(float32(a.X), float32(a.Y))
@@ -107,7 +112,7 @@ func (d *Drawer) DrawSegment(a, b vec.Vec2, clr cm.FColor) {
 	}
 }
 
-func (d *Drawer) DrawFatSegment(
+func (d *Drawer) drawFatSegment(
 	a, b vec.Vec2,
 	radius float64,
 	outline, fillColor cm.FColor,
@@ -143,7 +148,7 @@ func (d *Drawer) DrawFatSegment(
 	}
 }
 
-func (d *Drawer) DrawPolygon(
+func (d *Drawer) drawPolygon(
 	count int,
 	verts []vec.Vec2,
 	radius float64,
@@ -222,7 +227,7 @@ func (d *Drawer) DrawPolygon(
 	}
 }
 
-func (d *Drawer) DrawDot(
+func (d *Drawer) drawDot(
 	radius float64,
 	pos vec.Vec2,
 	fill cm.FColor,
@@ -293,9 +298,21 @@ func ScreenToWorld(screenPoint vec.Vec2, cameraGeoM ebiten.GeoM) vec.Vec2 {
 }
 
 type Theme struct {
-	Outline                                     cm.FColor
-	ShapeFill, ShapeSleepingFill, ShapeIdleFill cm.FColor
-	Constraint, CollisionPoint                  cm.FColor
+	Outline                       cm.FColor
+	ShapeFill                     cm.FColor
+	ShapeSleepingFill             cm.FColor
+	ShapeIdleFill                 cm.FColor
+	CollisionPoint                cm.FColor
+	ConstraintPinJointSegment     cm.FColor
+	ConstraintPinJointDot         cm.FColor
+	ConstraintSlideJointSegment   cm.FColor
+	ConstraintSlideJointDot       cm.FColor
+	ConstraintPivotJointDot       cm.FColor
+	ConstraintGrooveJointSegment  cm.FColor
+	ConstraintGrooveJointDot      cm.FColor
+	ConstraintCollisionPoint      cm.FColor
+	ConstraintDampedSpringDot     cm.FColor
+	ConstraintDampedSpringSegment cm.FColor
 }
 
 func ToFColor(c color.RGBA) cm.FColor {
@@ -308,11 +325,20 @@ func ToFColor(c color.RGBA) cm.FColor {
 
 func DefaultTheme() *Theme {
 	return &Theme{
-		ShapeFill:         cm.FColor{0, 0, 1, 1},
-		ShapeSleepingFill: cm.FColor{0.5, 0.5, 0.5, 1},
-		ShapeIdleFill:     cm.FColor{0.5, 0.5, 0.5, 1},
-		Outline:           cm.FColor{0.2, 0, 0.5, 1},
-		Constraint:        cm.FColor{0, 1, 1, 1},
-		CollisionPoint:    cm.FColor{1, 1, 0, 1},
+		Outline:                       cm.FColor{0.2, 0, 0.5, 1},
+		ShapeFill:                     cm.FColor{0, 0, 1, 1},
+		ShapeSleepingFill:             cm.FColor{0.5, 0.5, 0.5, 1},
+		ShapeIdleFill:                 cm.FColor{0.5, 0.5, 0.5, 1},
+		CollisionPoint:                cm.FColor{1, 1, 0, 1},
+		ConstraintPinJointSegment:     cm.FColor{0, 0.7, 0.7, 1},
+		ConstraintPinJointDot:         cm.FColor{0, 0.7, 0.7, 1},
+		ConstraintSlideJointSegment:   cm.FColor{0, 0.7, 0.7, 1},
+		ConstraintSlideJointDot:       cm.FColor{0, 0.7, 0.7, 1},
+		ConstraintPivotJointDot:       cm.FColor{0, 0.7, 0.7, 1},
+		ConstraintGrooveJointSegment:  cm.FColor{0, 0.7, 0.7, 1},
+		ConstraintGrooveJointDot:      cm.FColor{0, 0.7, 0.7, 1},
+		ConstraintCollisionPoint:      cm.FColor{1, 0.7, 0.7, 1},
+		ConstraintDampedSpringSegment: cm.FColor{1, 0.7, 0.7, 1},
+		ConstraintDampedSpringDot:     cm.FColor{1, 0.7, 0.7, 1},
 	}
 }

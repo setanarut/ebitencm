@@ -93,8 +93,8 @@ func main() {
 	space.Iterations = 20
 	space.SetGravity(vec.Vec2{0, 400})
 	cam.LerpEnabled = true
-	drawer.FillDisabled = false
-	drawer.StrokeDisabled = true
+	drawer.StrokeWidth = 1.5
+	// drawer.StrokeDisabled = true
 
 	offset := 30.0
 	chassisMass := 2.0
