@@ -49,14 +49,10 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyQ) {
-		r := g.cam.Angle()
-		r += 0.1
-		g.cam.SetAngle(r)
+		g.cam.Angle += 0.1
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyE) {
-		r := g.cam.Angle()
-		r -= 0.1
-		g.cam.SetAngle(r)
+		g.cam.Angle -= 0.1
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
@@ -134,7 +130,7 @@ func main() {
 	}
 
 	// Initialising Ebitengine/v2
-	game.cam.LerpEnabled = true
+	game.cam.SmoothType = kamera.Lerp
 	game.space = space
 
 	// Init drawer

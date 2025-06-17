@@ -54,14 +54,10 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyQ) {
-		r := cam.Angle()
-		r += 0.1
-		cam.SetAngle(r)
+		cam.Angle += 0.1
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyE) {
-		r := cam.Angle()
-		r -= 0.1
-		cam.SetAngle(r)
+		cam.Angle -= 0.1
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
@@ -92,7 +88,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	space.Iterations = 20
 	space.SetGravity(vec.Vec2{0, 400})
-	cam.LerpEnabled = true
+	cam.SmoothType = kamera.Lerp
 
 	offset := 30.0
 	chassisMass := 2.0
