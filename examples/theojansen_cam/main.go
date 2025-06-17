@@ -9,7 +9,7 @@ import (
 	"github.com/setanarut/cm"
 	"github.com/setanarut/ebitencm"
 	"github.com/setanarut/kamera/v2"
-	"github.com/setanarut/vec"
+	"github.com/setanarut/v"
 )
 
 var (
@@ -17,8 +17,8 @@ var (
 	segRadius                  = 3.0
 	space     *cm.Space        = cm.NewSpace()
 	drawer    *ebitencm.Drawer = ebitencm.NewDrawer()
-	screen    vec.Vec2         = vec.Vec2{640, 480}
-	camTarget vec.Vec2         = vec.Vec2{320, 240}
+	screen    v.Vec            = v.Vec{640, 480}
+	camTarget v.Vec            = v.Vec{320, 240}
 	cam       *kamera.Camera   = kamera.NewCamera(camTarget.X, camTarget.Y, screen.X, screen.Y)
 )
 
@@ -87,13 +87,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 func main() {
 	space.Iterations = 20
-	space.SetGravity(vec.Vec2{0, 400})
+	space.SetGravity(v.Vec{0, 400})
 	cam.SmoothType = kamera.Lerp
 
 	offset := 30.0
 	chassisMass := 2.0
-	a := vec.Vec2{-offset, 0}
-	b := vec.Vec2{offset, 0}
+	a := v.Vec{-offset, 0}
+	b := v.Vec{offset, 0}
 
 	chassis := cm.NewBody(chassisMass, cm.MomentForSegment(chassisMass, a, b, 0))
 	space.AddBody(chassis)
@@ -103,16 +103,16 @@ func main() {
 
 	crankMass := 1.0
 	crankRadius := 13.0
-	crank := cm.NewBody(crankMass, cm.MomentForCircle(crankMass, crankRadius, 0, vec.Vec2{}))
+	crank := cm.NewBody(crankMass, cm.MomentForCircle(crankMass, crankRadius, 0, v.Vec{}))
 	space.AddBody(crank)
-	shape = space.AddShape(cm.NewCircleShape(crank, crankRadius, vec.Vec2{}))
+	shape = space.AddShape(cm.NewCircleShape(crank, crankRadius, v.Vec{}))
 	shape.SetShapeFilter(cm.ShapeFilter{1, cm.AllCategories, cm.AllCategories})
-	space.AddConstraint(cm.NewPivotJoint2(chassis, crank, vec.Vec2{}, vec.Vec2{}))
+	space.AddConstraint(cm.NewPivotJoint2(chassis, crank, v.Vec{}, v.Vec{}))
 	side := 30.0
 	const numLegs = 2
 	for i := 0; i < numLegs; i++ {
-		makeLeg(space, side, offset, chassis, crank, vec.ForAngle(float64(2*i+0)/numLegs*math.Pi).Scale(crankRadius))
-		makeLeg(space, side, -offset, chassis, crank, vec.ForAngle(float64(2*i+1)/numLegs*math.Pi).Scale(crankRadius))
+		makeLeg(space, side, offset, chassis, crank, v.FromAngle(float64(2*i+0)/numLegs*math.Pi).Scale(crankRadius))
+		makeLeg(space, side, -offset, chassis, crank, v.FromAngle(float64(2*i+1)/numLegs*math.Pi).Scale(crankRadius))
 	}
 
 	motor = space.AddConstraint(cm.NewSimpleMotor(chassis, crank, 6)).Class.(*cm.SimpleMotor)
@@ -123,7 +123,7 @@ func main() {
 	})
 
 	// Walls
-	walls := []vec.Vec2{
+	walls := []v.Vec{
 		{-screen.X, screen.Y}, {screen.X * 2, screen.Y},
 	}
 	for i := 0; i < len(walls)-1; i += 2 {
@@ -139,32 +139,32 @@ func main() {
 	}
 }
 
-func makeLeg(space *cm.Space, side, offset float64, chassis, crank *cm.Body, anchor vec.Vec2) {
-	var a, b vec.Vec2
+func makeLeg(space *cm.Space, side, offset float64, chassis, crank *cm.Body, anchor v.Vec) {
+	var a, b v.Vec
 	var shape *cm.Shape
 
 	legMass := 1.0
 
 	// make a leg
-	a = vec.Vec2{}
-	b = vec.Vec2{0, -side}
+	a = v.Vec{}
+	b = v.Vec{0, -side}
 
 	upperLeg := cm.NewBody(legMass, cm.MomentForSegment(legMass, a, b, 0))
 	space.AddBody(upperLeg)
-	upperLeg.SetPosition(vec.Vec2{offset, 0})
+	upperLeg.SetPosition(v.Vec{offset, 0})
 
 	shape = space.AddShape(cm.NewSegmentShape(upperLeg, a, b, segRadius))
 	shape.SetShapeFilter(cm.ShapeFilter{1, cm.AllCategories, cm.AllCategories})
 
-	space.AddConstraint(cm.NewPivotJoint2(chassis, upperLeg, vec.Vec2{offset, 0}, vec.Vec2{}))
+	space.AddConstraint(cm.NewPivotJoint2(chassis, upperLeg, v.Vec{offset, 0}, v.Vec{}))
 
 	// lower leg
-	a = vec.Vec2{}
-	b = vec.Vec2{0, -1 * side}
+	a = v.Vec{}
+	b = v.Vec{0, -1 * side}
 	b = b.NegY()
 	lowerLeg := cm.NewBody(legMass, cm.MomentForSegment(legMass, a, b, 0))
 	space.AddBody(lowerLeg)
-	lowerLeg.SetPosition(vec.Vec2{offset, side})
+	lowerLeg.SetPosition(v.Vec{offset, side})
 
 	shape = cm.NewSegmentShape(lowerLeg, a, b, segRadius)
 	space.AddShape(shape)
@@ -175,16 +175,16 @@ func makeLeg(space *cm.Space, side, offset float64, chassis, crank *cm.Body, anc
 	shape.SetElasticity(0)
 	shape.SetFriction(1)
 
-	space.AddConstraint(cm.NewPinJoint(chassis, lowerLeg, vec.Vec2{offset, 0}, vec.Vec2{}))
+	space.AddConstraint(cm.NewPinJoint(chassis, lowerLeg, v.Vec{offset, 0}, v.Vec{}))
 
 	space.AddConstraint(cm.NewGearJoint(upperLeg, lowerLeg, 0, 1))
 
 	var constraint *cm.Constraint
 	diag := math.Sqrt(side*side + offset*offset)
 
-	constraint = space.AddConstraint(cm.NewPinJoint(crank, upperLeg, anchor, vec.Vec2{0, -side}))
+	constraint = space.AddConstraint(cm.NewPinJoint(crank, upperLeg, anchor, v.Vec{0, -side}))
 	constraint.Class.(*cm.PinJoint).Dist = diag
 
-	constraint = space.AddConstraint(cm.NewPinJoint(crank, lowerLeg, anchor, vec.Vec2{}))
+	constraint = space.AddConstraint(cm.NewPinJoint(crank, lowerLeg, anchor, v.Vec{}))
 	constraint.Class.(*cm.PinJoint).Dist = diag
 }

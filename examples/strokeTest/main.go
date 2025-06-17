@@ -9,7 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/cm"
 	"github.com/setanarut/ebitencm"
-	"github.com/setanarut/vec"
+	"github.com/setanarut/v"
 )
 
 const (
@@ -45,7 +45,7 @@ func main() {
 	space := cm.NewSpace()
 	g.space = space
 	space.SleepTimeThreshold = 0.5
-	space.SetGravity(vec.Vec2{X: 0, Y: 0})
+	space.SetGravity(v.Vec{X: 0, Y: 0})
 
 	g.drawer = ebitencm.NewDrawer()
 	g.drawer.SetOpacity(0.8)
@@ -54,7 +54,7 @@ func main() {
 	g.drawer.DrawingOptions.StaticBodyStrokeWidth = 10.
 
 	// walls
-	walls := []vec.Vec2{
+	walls := []v.Vec{
 		{0, 0}, {screenWidth, 0},
 		{screenWidth, 0}, {screenWidth, screenHeight},
 		{screenWidth, screenHeight}, {0, screenHeight},
@@ -83,35 +83,35 @@ func addBox(space *cm.Space, x, y, w, h, r float64) *cm.Shape {
 	s := cm.NewBoxShape(b, w, h, r)
 	s.SetElasticity(0.5)
 	s.SetFriction(0.5)
-	b.SetPosition(vec.Vec2{x, y})
+	b.SetPosition(v.Vec{x, y})
 	space.AddBodyWithShapes(b)
 	return s
 }
 func AddTriangle(space *cm.Space, x, y float64) *cm.Shape {
-	verts := []vec.Vec2{{0, -5}, {5, 6}, {4, 7}, {4, 7}, {-4, 7}, {-5, 6}}
-	geom := cm.NewTransformTranslate(vec.Vec2{0, 0})
+	verts := []v.Vec{{0, -5}, {5, 6}, {4, 7}, {4, 7}, {-4, 7}, {-5, 6}}
+	geom := cm.NewTransformTranslate(v.Vec{0, 0})
 	geom.Scale(6, 6)
 
 	for i, v := range verts {
 		verts[i] = geom.ApplyVector(v)
 	}
 
-	b := cm.NewBody(1, cm.MomentForPoly(1, len(verts), verts, vec.Vec2{}, 0))
+	b := cm.NewBody(1, cm.MomentForPoly(1, len(verts), verts, v.Vec{}, 0))
 	s := cm.NewPolyShape(b, verts, cm.NewTransformIdentity(), 0)
 	s.SetElasticity(0.5)
 	s.SetFriction(0.5)
-	b.SetPosition(vec.Vec2{x, y})
+	b.SetPosition(v.Vec{x, y})
 	space.AddBodyWithShapes(b)
 	return s
 }
 
 func AddBall(space *cm.Space, x, y, radius float64) *cm.Shape {
 	mass := radius * radius / 500.0
-	b := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{}))
-	cm.NewCircleShape(b, radius, vec.Vec2{})
+	b := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, v.Vec{}))
+	cm.NewCircleShape(b, radius, v.Vec{})
 	b.Shapes[0].SetElasticity(0.5)
 	b.Shapes[0].SetFriction(0.5)
-	b.SetPosition(vec.Vec2{x, y})
+	b.SetPosition(v.Vec{x, y})
 	space.AddBodyWithShapes(b)
 	return b.Shapes[0]
 }

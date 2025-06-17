@@ -7,7 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/cm"
-	"github.com/setanarut/vec"
+	"github.com/setanarut/v"
 )
 
 type Drawer struct {
@@ -52,7 +52,7 @@ func (d *Drawer) SetFillAntialias(antialias bool) {
 }
 
 func (d *Drawer) drawCircle(
-	pos vec.Vec2,
+	pos v.Vec,
 	angle, radius float64,
 	outline, fill cm.FColor,
 	strokeWidth float32,
@@ -86,7 +86,7 @@ func (d *Drawer) drawCircle(
 	}
 }
 
-func (d *Drawer) drawSegment(a, b vec.Vec2, clr cm.FColor, strokeWidth float32) {
+func (d *Drawer) drawSegment(a, b v.Vec, clr cm.FColor, strokeWidth float32) {
 
 	var path vector.Path = vector.Path{}
 	path.MoveTo(float32(a.X), float32(a.Y))
@@ -101,7 +101,7 @@ func (d *Drawer) drawSegment(a, b vec.Vec2, clr cm.FColor, strokeWidth float32) 
 }
 
 func (d *Drawer) drawFatSegment(
-	a, b vec.Vec2,
+	a, b v.Vec,
 	radius float64,
 	outline, fillColor cm.FColor,
 	strokeWidth float32,
@@ -137,9 +137,9 @@ func (d *Drawer) drawFatSegment(
 	}
 }
 
-func (d *Drawer) drawPolygon(count int, verts []vec.Vec2, radius float64, outline, fill cm.FColor, strokeWidth float32) {
+func (d *Drawer) drawPolygon(count int, verts []v.Vec, radius float64, outline, fill cm.FColor, strokeWidth float32) {
 	type ExtrudeVerts struct {
-		offset, n vec.Vec2
+		offset, n v.Vec
 	}
 	extrude := make([]ExtrudeVerts, count)
 
@@ -148,8 +148,8 @@ func (d *Drawer) drawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 		v1 := verts[i]
 		v2 := verts[(i+1)%count]
 
-		n1 := v1.Sub(v0).ReversePerp().Unit()
-		n2 := v2.Sub(v1).ReversePerp().Unit()
+		n1 := reversePerp(v1.Sub(v0)).Unit()
+		n2 := reversePerp(v2.Sub(v1)).Unit()
 
 		offset := n1.Add(n2).Scale(1.0 / (n1.Dot(n2) + 1.0))
 		extrude[i] = ExtrudeVerts{offset, n2}
@@ -203,7 +203,7 @@ func (d *Drawer) drawPolygon(count int, verts []vec.Vec2, radius float64, outlin
 	}
 }
 
-func (d *Drawer) drawDot(radius float64, pos vec.Vec2, fill cm.FColor) {
+func (d *Drawer) drawDot(radius float64, pos v.Vec, fill cm.FColor) {
 	if !d.DrawingOptions.AllDotsDisabled {
 		var path *vector.Path = &vector.Path{}
 		path.Arc(
@@ -248,14 +248,14 @@ func applyMatrixToVertices(vs []ebiten.Vertex, matrix *ebiten.GeoM, r, g, b, a f
 }
 
 // ScreenToWorld converts screen-space coordinates to world-space
-func ScreenToWorld(screenPoint vec.Vec2, cameraGeoM ebiten.GeoM) vec.Vec2 {
+func ScreenToWorld(screenPoint v.Vec, cameraGeoM ebiten.GeoM) v.Vec {
 	if cameraGeoM.IsInvertible() {
 		cameraGeoM.Invert()
 		worldX, worldY := cameraGeoM.Apply(screenPoint.X, screenPoint.Y)
-		return vec.Vec2{worldX, worldY}
+		return v.Vec{worldX, worldY}
 	} else {
 		// When scaling it can happened that matrix is not invertable
-		return vec.Vec2{math.NaN(), math.NaN()}
+		return v.Vec{math.NaN(), math.NaN()}
 	}
 }
 
@@ -359,4 +359,9 @@ func DefaultDrawingOptions() *DrawingOptions {
 		StaticBodyDisabled:         false,
 		StaticBodyStrokeWidth:      2,
 	}
+}
+
+// ReversePerp returns a perpendicular vector. (-90 degree rotation)
+func reversePerp(a v.Vec) v.Vec {
+	return v.Vec{a.Y, -a.X}
 }

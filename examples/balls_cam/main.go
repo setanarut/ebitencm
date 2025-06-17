@@ -9,12 +9,12 @@ import (
 	"github.com/setanarut/cm"
 	"github.com/setanarut/ebitencm"
 	"github.com/setanarut/kamera/v2"
-	"github.com/setanarut/vec"
+	"github.com/setanarut/v"
 )
 
-var Screen vec.Vec2 = vec.Vec2{640, 480}
+var Screen v.Vec = v.Vec{640, 480}
 var friction, elasticity, gravity float64 = 0.8, 0.9, 100
-var targetOffset = vec.Vec2{}
+var targetOffset = v.Vec{}
 
 type Game struct {
 	cam    *kamera.Camera
@@ -36,7 +36,7 @@ func (g *Game) Update() error {
 	pos := g.ball.Position()
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) {
-		targetOffset = vec.Vec2{}
+		targetOffset = v.Vec{}
 		g.cam.Reset()
 	}
 
@@ -85,10 +85,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return int(Screen.X), int(Screen.Y)
 }
 
-func addBall(space *cm.Space, pos vec.Vec2, radius float64) *cm.Body {
+func addBall(space *cm.Space, pos v.Vec, radius float64) *cm.Body {
 	mass := radius / space.Gravity.Y
-	b := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, vec.Vec2{}))
-	cm.NewCircleShape(b, radius, vec.Vec2{})
+	b := cm.NewBody(mass, cm.MomentForCircle(mass, 0, radius, v.Vec{}))
+	cm.NewCircleShape(b, radius, v.Vec{})
 	b.Shapes[0].SetElasticity(elasticity)
 	b.Shapes[0].SetFriction(friction)
 	space.AddBodyWithShapes(b)
@@ -100,10 +100,10 @@ func main() {
 	// Initialising Chipmunk
 	space := cm.NewSpace()
 	space.SleepTimeThreshold = 0.5
-	space.SetGravity(vec.Vec2{X: 0, Y: gravity})
+	space.SetGravity(v.Vec{X: 0, Y: gravity})
 
 	// walls
-	walls := []vec.Vec2{
+	walls := []v.Vec{
 		{0, 0}, {Screen.X, 0},
 		{Screen.X, 0}, {Screen.X, Screen.Y},
 		{Screen.X, Screen.Y}, {0, Screen.Y},

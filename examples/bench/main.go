@@ -11,11 +11,11 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/setanarut/cm"
 	"github.com/setanarut/ebitencm"
-	"github.com/setanarut/vec"
+	"github.com/setanarut/v"
 )
 
 var (
-	screenSize = vec.Vec2{640, 480}
+	screenSize = v.Vec{640, 480}
 )
 
 type Game struct {
@@ -52,13 +52,13 @@ func main() {
 	// Initialising Chipmunk
 	space := cm.NewSpace()
 	space.SleepTimeThreshold = 0.2
-	space.SetGravity(vec.Vec2{0, 50})
+	space.SetGravity(v.Vec{0, 50})
 
 	simpleTerrain(space)
 	var r float64 = 6.0
 	for i := 0; i < 100; i++ {
-		pos := vec.Vec2{(float64(i%10) * r * 2), (float64(i/10) * r * 2)}
-		pos = pos.Add(screenSize.Scale(0.5)).Add(vec.Vec2{-50, -50})
+		pos := v.Vec{(float64(i%10) * r * 2), (float64(i/10) * r * 2)}
+		pos = pos.Add(screenSize.Scale(0.5)).Add(v.Vec{-50, -50})
 		addBall(space, pos.X, pos.Y, r)
 	}
 
@@ -77,18 +77,18 @@ func main() {
 
 func addBall(space *cm.Space, x, y, radius float64) {
 	mass := 1.
-	moi := cm.MomentForCircle(mass, 0, radius, vec.Vec2{})
+	moi := cm.MomentForCircle(mass, 0, radius, v.Vec{})
 	body := cm.NewBody(mass, moi)
-	cm.NewCircleShape(body, radius, vec.Vec2{})
+	cm.NewCircleShape(body, radius, v.Vec{})
 	body.Shapes[0].SetElasticity(0.91)
 	body.Shapes[0].SetFriction(0.9)
 	space.AddBodyWithShapes(body)
-	body.SetPosition(vec.Vec2{x, y})
-	body.ApplyImpulseAtLocalPoint(vec.Vec2{0, 200}, vec.Vec2{})
+	body.SetPosition(v.Vec{x, y})
+	body.ApplyImpulseAtLocalPoint(v.Vec{0, 200}, v.Vec{})
 }
 
 func simpleTerrain(space *cm.Space) *cm.Space {
-	var simpleTerrainVerts = []vec.Vec2{
+	var simpleTerrainVerts = []v.Vec{
 		{350.00, 425.07}, {336.00, 436.55}, {272.00, 435.39}, {258.00, 427.63}, {225.28, 420.00}, {202.82, 396.00},
 		{191.81, 388.00}, {189.00, 381.89}, {173.00, 380.39}, {162.59, 368.00}, {150.47, 319.00}, {128.00, 311.55},
 		{119.14, 286.00}, {126.84, 263.00}, {120.56, 227.00}, {141.14, 178.00}, {137.52, 162.00}, {146.51, 142.00},
@@ -100,7 +100,7 @@ func simpleTerrain(space *cm.Space) *cm.Space {
 	}
 
 	// terrain offset
-	offset := vec.Vec2{0, 0}
+	offset := v.Vec{0, 0}
 
 	for i := 0; i < len(simpleTerrainVerts)-1; i++ {
 		a := simpleTerrainVerts[i]

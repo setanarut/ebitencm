@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/setanarut/cm"
 	"github.com/setanarut/ebitencm"
-	"github.com/setanarut/vec"
+	"github.com/setanarut/v"
 )
 
 // Sabitler
@@ -45,9 +45,9 @@ var is_falling = false
 var is_skiding = false
 var is_crouching = false
 
-// var _old_velocity = vec.Vec2{}
+// var _old_velocity = v.Vec{}
 
-var input_axis = vec.Vec2{}
+var input_axis = v.Vec{}
 var Speed_scale = 0.0
 
 var min_speed = MIN_SPEED
@@ -55,12 +55,12 @@ var max_speed = MAX_WALK_SPEED
 var acceleration = WALK_ACCELERATION
 
 var speed_threshold int = 0
-var Screen vec.Vec2 = vec.Vec2{640, 480}
+var Screen v.Vec = v.Vec{640, 480}
 
 var playerBody *cm.Body
 var playerShape *cm.Shape
 
-// var groundNormal vec.Vec2
+// var groundNormal v.Vec
 var is_on_floor bool
 
 type Game struct {
@@ -89,13 +89,13 @@ func main() {
 	game := &Game{}
 	space := cm.NewSpace()
 	space.SleepTimeThreshold = 0.5
-	space.SetGravity(vec.Vec2{X: 0, Y: 10})
+	space.SetGravity(v.Vec{X: 0, Y: 10})
 	space.Iterations = 40
 	space.CollisionBias = math.Pow(0.001, 60)
 	space.CollisionSlop = 0.00001
 
 	// walls
-	walls := []vec.Vec2{
+	walls := []v.Vec{
 		{0, 0}, {Screen.X, 0},
 		{Screen.X, 0}, {Screen.X, Screen.Y},
 		{Screen.X, Screen.Y}, {0, Screen.Y},
@@ -110,7 +110,7 @@ func main() {
 
 	playerBody = cm.NewBody(0.0001, math.MaxFloat64)
 	playerShape = cm.NewBoxShape2(playerBody, cm.BB{-6, -8, 6, 8}, 0)
-	playerBody.SetPosition(vec.Vec2{100, 200})
+	playerBody.SetPosition(v.Vec{100, 200})
 	playerBody.SetVelocityUpdateFunc(VelFunc)
 	playerShape.SetElasticity(0)
 	playerShape.SetFriction(0)
@@ -134,7 +134,7 @@ func main() {
 	}
 }
 
-func VelFunc(body *cm.Body, gravity vec.Vec2, damping, dt float64) {
+func VelFunc(body *cm.Body, gravity v.Vec, damping, dt float64) {
 	velocity := playerBody.Velocity()
 
 	// process_jump()
@@ -224,7 +224,7 @@ func VelFunc(body *cm.Body, gravity vec.Vec2, damping, dt float64) {
 }
 
 func on_floor() bool {
-	groundNormal := vec.Vec2{}
+	groundNormal := v.Vec{}
 	playerBody.EachArbiter(func(arb *cm.Arbiter) {
 		n := arb.Normal().Neg()
 		if n.Y < groundNormal.Y {
@@ -236,8 +236,8 @@ func on_floor() bool {
 	return is_on_floor
 }
 
-func getAxis() vec.Vec2 {
-	axis := vec.Vec2{}
+func getAxis() v.Vec {
+	axis := v.Vec{}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
 		axis.Y -= 1
 	}

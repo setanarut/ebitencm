@@ -6,7 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/setanarut/cm"
-	"github.com/setanarut/vec"
+	"github.com/setanarut/v"
 )
 
 const GrabableMaskBit uint = 1 << 31
@@ -52,11 +52,11 @@ func (h *mouseEventHandler) handleMouseEvent(drawer *Drawer, space *cm.Space) {
 		x, y = ebiten.CursorPosition()
 	}
 
-	cursor := vec.Vec2{X: float64(x), Y: float64(y)}
+	cursor := v.Vec{X: float64(x), Y: float64(y)}
 	cursor = ScreenToWorld(cursor, *drawer.GeoM)
 
 	if isJuestTouched {
-		h.mouseBody.SetVelocityVector(vec.Vec2{})
+		h.mouseBody.SetVelocityVector(v.Vec{})
 		h.mouseBody.SetPosition(cursor)
 	} else {
 		newPoint := h.mouseBody.Position().Lerp(cursor, 0.25)
@@ -72,14 +72,14 @@ func (h *mouseEventHandler) handleMouseEvent(drawer *Drawer, space *cm.Space) {
 	}
 }
 
-func (h *mouseEventHandler) onMouseDown(space *cm.Space, cursorPosition vec.Vec2) {
+func (h *mouseEventHandler) onMouseDown(space *cm.Space, cursorPosition v.Vec) {
 	// give the mouse click a little radius to make it easier to click small shapes.
 	radius := 5.0
 
 	info := space.PointQueryNearest(cursorPosition, radius, GrabFilter)
 
 	if info.Shape != nil && info.Shape.Body.Mass() < math.MaxFloat64 {
-		var nearest vec.Vec2
+		var nearest v.Vec
 		if info.Distance > 0 {
 			nearest = info.Point
 		} else {
@@ -87,7 +87,7 @@ func (h *mouseEventHandler) onMouseDown(space *cm.Space, cursorPosition vec.Vec2
 		}
 
 		body := info.Shape.Body
-		h.mouseJoint = cm.NewPivotJoint2(h.mouseBody, body, vec.Vec2{}, body.WorldToLocal(nearest))
+		h.mouseJoint = cm.NewPivotJoint2(h.mouseBody, body, v.Vec{}, body.WorldToLocal(nearest))
 		h.mouseJoint.SetMaxForce(50000)
 		h.mouseJoint.SetErrorBias(math.Pow(1.0-0.15, 60.0))
 		space.AddConstraint(h.mouseJoint)

@@ -6,14 +6,14 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/setanarut/cm"
-	"github.com/setanarut/vec"
+	"github.com/setanarut/v"
 )
 
 func init() {
 	log.SetFlags(log.Lshortfile)
 }
 
-var springVerts = []vec.Vec2{
+var springVerts = []v.Vec{
 	{0.00, 0.0}, {0.20, 0.0}, {0.25, 3.0}, {0.30, -6.0}, {0.35, 6.0},
 	{0.40, -6.0}, {0.45, 6.0}, {0.50, -6.0}, {0.55, 6.0}, {0.6, -6.0},
 	{0.65, 6.0}, {0.70, -3.0}, {0.75, 6.0}, {0.80, 0.0}, {1.0, 0.0}}
@@ -34,7 +34,7 @@ func (drw *Drawer) drawShape(shape *cm.Shape, outline, fill cm.FColor, strokeWid
 
 		count := poly.Count()
 		planes := poly.Planes
-		verts := make([]vec.Vec2, count)
+		verts := make([]v.Vec, count)
 
 		for i := 0; i < count; i++ {
 			verts[i] = planes[i].V0
@@ -99,12 +99,12 @@ func (drw *Drawer) drawConstraint(constraint *cm.Constraint, strokeWidth float32
 		cos := delta.X
 		sin := delta.Y
 		s := 1.0 / delta.Mag()
-		r1 := vec.Vec2{cos, -sin * s}
-		r2 := vec.Vec2{sin, cos * s}
-		verts := []vec.Vec2{}
+		r1 := v.Vec{cos, -sin * s}
+		r2 := v.Vec{sin, cos * s}
+		verts := []v.Vec{}
 		for i := 0; i < len(springVerts); i++ {
-			v := springVerts[i]
-			verts = append(verts, vec.Vec2{v.Dot(r1) + a.X, v.Dot(r2) + a.Y})
+			vt := springVerts[i]
+			verts = append(verts, v.Vec{vt.Dot(r1) + a.X, vt.Dot(r2) + a.Y})
 		}
 		for i := 0; i < len(springVerts)-1; i++ {
 			drw.drawSegment(verts[i], verts[i+1], drw.Theme.ConstraintDampedSpringSegment, strokeWidth)
