@@ -46,11 +46,11 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyZ) {
-		cam.ZoomFactor += 10
+		cam.ZoomFactor += 0.01
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyX) {
-		cam.ZoomFactor -= 10
+		cam.ZoomFactor -= 0.01
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyQ) {
@@ -61,16 +61,16 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
-		camTarget.X += 10
+		camTarget.X += 1
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
-		camTarget.X -= 10
+		camTarget.X -= 1
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		camTarget.Y -= 10
+		camTarget.Y -= 1
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		camTarget.Y += 10
+		camTarget.Y += 1
 	}
 	cam.LookAt(camTarget.X, camTarget.Y)
 	return nil
@@ -110,7 +110,7 @@ func main() {
 	space.AddConstraint(cm.NewPivotJoint2(chassis, crank, v.Vec{}, v.Vec{}))
 	side := 30.0
 	const numLegs = 2
-	for i := 0; i < numLegs; i++ {
+	for i := range numLegs {
 		makeLeg(space, side, offset, chassis, crank, v.FromAngle(float64(2*i+0)/numLegs*math.Pi).Scale(crankRadius))
 		makeLeg(space, side, -offset, chassis, crank, v.FromAngle(float64(2*i+1)/numLegs*math.Pi).Scale(crankRadius))
 	}

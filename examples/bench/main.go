@@ -44,19 +44,17 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return int(screenSize.X), int(screenSize.Y)
 }
 
-// var (
-// 	ball *cm.Body
-// )
-
 func main() {
 	// Initialising Chipmunk
 	space := cm.NewSpace()
 	space.SleepTimeThreshold = 0.2
-	space.SetGravity(v.Vec{0, 50})
+	space.SetGravity(v.Vec{0, 100})
 
 	simpleTerrain(space)
 	var r float64 = 6.0
-	for i := 0; i < 100; i++ {
+
+	// add balls
+	for i := range 200 {
 		pos := v.Vec{(float64(i%10) * r * 2), (float64(i/10) * r * 2)}
 		pos = pos.Add(screenSize.Scale(0.5)).Add(v.Vec{-50, -50})
 		addBall(space, pos.X, pos.Y, r)
@@ -76,7 +74,7 @@ func main() {
 }
 
 func addBall(space *cm.Space, x, y, radius float64) {
-	mass := 1.
+	mass := 0.3
 	moi := cm.MomentForCircle(mass, 0, radius, v.Vec{})
 	body := cm.NewBody(mass, moi)
 	cm.NewCircleShape(body, radius, v.Vec{})
